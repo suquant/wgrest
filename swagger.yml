@@ -3,7 +3,6 @@ info:
   version: v1.0
   title: WireGuard RESTful API
   description: Manage WireGuard VPN tunnels by RESTful manner
-basePath: /api/v1.0
 securityDefinitions:
   key:
     type: apiKey
@@ -19,7 +18,7 @@ schemes:
   - http
   - https
 paths:
-  /wg/devices/:
+  /devices/:
     post:
       summary: create new wireguard device
       operationId: DeviceCreate
@@ -59,7 +58,7 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/Error"
-  /wg/devices/{dev}:
+  /devices/{dev}:
     get:
       summary: get wireguard device details
       operationId: DeviceGet
@@ -100,7 +99,7 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/Error"
-  /wg/devices/{dev}/peers/:
+  /devices/{dev}/peers/:
     get:
       summary: get wireguard device's peers
       operationId: PeerList
@@ -152,7 +151,7 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/Error"
-  /wg/devices/{dev}/peers/{peer_id}:
+  /devices/{dev}/peers/{peer_id}:
     get:
       summary: wireguard peer's detail
       operationId: PeerGet

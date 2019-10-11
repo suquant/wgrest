@@ -1,5 +1,5 @@
 # wgrest
-WireGuard RESTfull API
+WireGuard REST API
 
 ## Quick Start
 
