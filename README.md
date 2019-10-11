@@ -1,0 +1,2 @@
+# wgrest
+WireGuard RESTfull API
