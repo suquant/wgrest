@@ -15,6 +15,7 @@ jobs:
           command: |
             go get github.com/mitchellh/gox
             go get github.com/tcnksm/ghr
+            mkdir -p dist/
             gox -os="linux darwin windows" -arch="amd64" -output="dist/wgrest_{{.OS}}_{{.Arch}}" ./...
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
