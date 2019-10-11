@@ -1,0 +1,36 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      ARTIFACTS_DIR: /tmp/artifacts
+    filters:
+      tags: /.*/
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run: 
+          name: cross compile
+          command: |
+            go get github.com/mitchellh/gox
+            go get github.com/tcnksm/ghr
+            gox -os="linux darwin windows" -arch="amd64" -output="dist/wgrest_{{.OS}}_{{.Arch}}"
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - add_ssh_keys
+      - run:
+          name: create release
+          command: |
+            set +e
+            tag=$(git log -1 --pretty=%B | grep "^[v0-9]\+\.[0-9]\+\.[0-9]\+$")
+            if [ "$tag" ]; then
+              ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $tag dist/
+            else
+              echo "The commit message(s) did not indicate a major/minor/patch version."
+            fi
+
