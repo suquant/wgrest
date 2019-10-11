@@ -1,0 +1,253 @@
+swagger: "2.0"
+info:
+  version: v1.0
+  title: WireGuard RESTful API
+  description: Manage WireGuard VPN tunnels by RESTful manner
+basePath: /api/v1.0
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: Token
+security:
+  - key: []
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+  - https
+paths:
+  /wg/devices/:
+    post:
+      summary: create new wireguard device
+      operationId: DeviceCreate
+      tags:
+        - wireguard
+      parameters:
+        - name: device
+          in: body
+          description: device configuration
+          required: true
+          schema:
+            $ref: "#/definitions/WireguardDevice"  
+      responses:
+        201:
+          description: created
+          headers:
+            Location:
+              type: string
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+      deprecated: false
+    get:
+      summary: get wireguard devices
+      operationId: DeviceList
+      tags:
+        - wireguard
+      responses:
+        200:
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/WireguardDevice"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+  /wg/devices/{dev}:
+    get:
+      summary: get wireguard device details
+      operationId: DeviceGet
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: "#/definitions/WireguardDevice"
+        404:
+          description: not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      summary: delete wireguard interface
+      operationId: DeviceDelete
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+      responses:
+        204:
+          description: no content
+        404:
+          description: not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+  /wg/devices/{dev}/peers/:
+    get:
+      summary: get wireguard device's peers
+      operationId: PeerList
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/WireguardPeer"
+        404:
+          description: not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      summary: add peer to wireguard device
+      operationId: PeerCreate
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+        - name: peer
+          in: body
+          description: peer configuration
+          required: true
+          schema:
+            $ref: "#/definitions/WireguardPeer"  
+      responses:
+        201:
+          description: created
+          headers:
+            Location:
+              type: string
+        404:
+          description: device not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+  /wg/devices/{dev}/peers/{peer_id}:
+    get:
+      summary: wireguard peer's detail
+      operationId: PeerGet
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+        - name: peer_id
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: "#/definitions/WireguardPeer"
+        404:
+          description: peer/device not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      summary: delete wireguard's peer
+      operationId: PeerDelete
+      tags:
+        - wireguard
+      parameters:
+        - name: dev
+          in: path
+          type: string
+          required: true
+        - name: peer_id
+          in: path
+          type: string
+          required: true
+      responses:
+        204:
+          description: no content
+        404:
+          description: not found
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int64
+      detail:
+        type: string
+  WireguardDevice:
+    type: object
+    required:
+      - name
+      - listen_port
+      - private_key
+      - network
+    properties:
+      name: 
+        type: string
+      listen_port:
+        type: integer
+        format: int64
+      public_key:
+        type: string
+        minLength: 32
+      private_key:
+        type: string
+        minLength: 32
+      network:
+        type: string
+  WireguardPeer:
+    type: object
+    required:
+      - public_key
+      - allowed_ips
+    properties:
+      public_key:
+        type: string
+        minLength: 32
+      preshared_key:
+        type: string
+        minLength: 32
+      allowed_ips:
+        type: array
+        items:
+          type: string
+      peer_id:
+        type: string
+        readOnly: true
