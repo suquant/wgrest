@@ -11,6 +11,8 @@ require (
 	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.3
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/mitchellh/gox v1.0.1 // indirect
+	github.com/tcnksm/ghr v0.13.0 // indirect
 	github.com/vishvananda/netlink v1.0.0
 	github.com/vishvananda/netns v0.0.0-20190625233234-7109fa855b0f // indirect
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
