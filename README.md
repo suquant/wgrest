@@ -1,6 +1,9 @@
 # wgrest
 WireGuard REST API
 
+WireGuard is an simple and modern VPN. It is cross-platform (Windows, macOS, BSD, iOS, Android). 
+
+
 ## Install
 
 ```shell
