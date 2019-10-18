@@ -212,11 +212,6 @@ definitions:
         type: string
   WireguardDevice:
     type: object
-    required:
-      - name
-      - listen_port
-      - private_key
-      - network
     properties:
       name: 
         type: string
@@ -233,10 +228,10 @@ definitions:
         type: string
   WireguardPeer:
     type: object
-    required:
-      - public_key
-      - allowed_ips
     properties:
+      private_key:
+        type: string
+        minLength: 32
       public_key:
         type: string
         minLength: 32

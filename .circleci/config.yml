@@ -10,6 +10,10 @@ jobs:
       - restore_cache:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: run tests
+          command: |
+            go test ./... -count 1
       - run: 
           name: cross compile
           command: |
