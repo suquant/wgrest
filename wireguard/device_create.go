@@ -24,8 +24,8 @@ func DeviceCreateHandler(
 	params wireguard.DeviceCreateParams,
 	principal interface{},
 ) middleware.Responder {
-	name := params.Device.Name
-	wgConfPath := getWgConfPath(*name)
+	name := *params.Device.Name
+	wgConfPath := getWgConfPath(name)
 
 	// check if interface already exist
 	_, err := os.Stat(wgConfPath)
@@ -66,7 +66,7 @@ func DeviceCreateHandler(
 	listenPort := int(*params.Device.ListenPort)
 
 	la := netlink.NewLinkAttrs()
-	la.Name = *name
+	la.Name = name
 
 	wgDev := &netlink.GenericLink{
 		LinkAttrs: la,
@@ -108,7 +108,7 @@ func DeviceCreateHandler(
 		ListenPort: &listenPort,
 	}
 
-	err = client.ConfigureDevice(*name, cfg)
+	err = client.ConfigureDevice(name, cfg)
 	if err != nil {
 		msg := fmt.Sprintf("wgctrl err: %s", err.Error())
 		wgrest.Logger.Println(msg)
@@ -141,9 +141,9 @@ func DeviceCreateHandler(
 	defer rwc.Close()
 
 	fmt.Fprintf(rwc, "[Interface]\n")
-	fmt.Fprintf(rwc, "Address = %s\n", params.Device.Network)
-	fmt.Fprintf(rwc, "ListenPort = %v\n", params.Device.ListenPort)
-	fmt.Fprintf(rwc, "PrivateKey = %s\n", params.Device.PrivateKey)
+	fmt.Fprintf(rwc, "Address = %s\n", *params.Device.Network)
+	fmt.Fprintf(rwc, "ListenPort = %v\n", *params.Device.ListenPort)
+	fmt.Fprintf(rwc, "PrivateKey = %s\n", *params.Device.PrivateKey)
 	fmt.Fprintf(rwc, "SaveConfig = true\n\n")
 
 	scheme := "https"

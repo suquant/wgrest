@@ -9,16 +9,19 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
+// DeviceDecoder device decoder
 type DeviceDecoder struct {
 	r io.Reader
 }
 
+// NewDeviceDecoder new device decoder
 func NewDeviceDecoder(r io.Reader) *DeviceDecoder {
 	return &DeviceDecoder{
 		r: r,
 	}
 }
 
+// Decode decode device
 func (dec *DeviceDecoder) Decode(v *wgtypes.Device) error {
 	cfg, err := ini.Load(dec.r)
 	if err != nil {
