@@ -3,6 +3,7 @@ package wireguard
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 
@@ -45,7 +46,7 @@ func getDeviceByWGDevice(wgdev *wgtypes.Device) *models.WireguardDevice {
 	name := wgdev.Name
 	privateKey := wgdev.PrivateKey.String()
 	publicKey := wgdev.PublicKey.String()
-	var network *string
+	var network string
 
 	addrs, err := getInterfaceNetworks(name)
 	if err != nil {
@@ -55,7 +56,7 @@ func getDeviceByWGDevice(wgdev *wgtypes.Device) *models.WireguardDevice {
 	} else {
 		for _, a := range addrs {
 			networkString := a.String()
-			network = &networkString
+			network = networkString
 		}
 	}
 
@@ -64,7 +65,7 @@ func getDeviceByWGDevice(wgdev *wgtypes.Device) *models.WireguardDevice {
 		Name:       &name,
 		PrivateKey: &privateKey,
 		PublicKey:  publicKey,
-		Network:    network,
+		Network:    &network,
 	}
 }
 
@@ -223,4 +224,8 @@ func getPeerID(peer wgtypes.Peer) (string, error) {
 	}
 
 	return string(decodedPublicKey), nil
+}
+
+func getWgConfPath(dev string) string {
+	return fmt.Sprintf("/etc/wireguard/%s.conf", dev)
 }

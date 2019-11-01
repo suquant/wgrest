@@ -37,6 +37,10 @@ paths:
           headers:
             Location:
               type: string
+        409:
+          description: device exists
+          schema:
+            $ref: "#/definitions/Error"
         default:
           description: error
           schema:
@@ -212,6 +216,11 @@ definitions:
         type: string
   WireguardDevice:
     type: object
+    required:
+      - name
+      - listen_port
+      - private_key
+      - network
     properties:
       name: 
         type: string
@@ -221,6 +230,7 @@ definitions:
       public_key:
         type: string
         minLength: 32
+        readOnly: true
       private_key:
         type: string
         minLength: 32
@@ -228,6 +238,8 @@ definitions:
         type: string
   WireguardPeer:
     type: object
+    required:
+      - public_key
     properties:
       private_key:
         type: string

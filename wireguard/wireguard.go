@@ -7,6 +7,7 @@ import (
 
 // ApplyAPI apply to api
 func ApplyAPI(api *operations.WgrestAPI) {
+
 	// device
 	api.WireguardDeviceCreateHandler = wireguard.DeviceCreateHandlerFunc(DeviceCreateHandler)
 	api.WireguardDeviceListHandler = wireguard.DeviceListHandlerFunc(DeviceListHandler)

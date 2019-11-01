@@ -86,6 +86,12 @@ func init() {
               }
             }
           },
+          "409": {
+            "description": "device exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "default": {
             "description": "error",
             "schema": {
@@ -352,15 +358,15 @@ func init() {
         },
         "public_key": {
           "type": "string",
-          "minLength": 32
+          "minLength": 32,
+          "readOnly": true
         }
       }
     },
     "WireguardPeer": {
       "type": "object",
       "required": [
-        "public_key",
-        "allowed_ips"
+        "public_key"
       ],
       "properties": {
         "allowed_ips": {
@@ -374,6 +380,10 @@ func init() {
           "readOnly": true
         },
         "preshared_key": {
+          "type": "string",
+          "minLength": 32
+        },
+        "private_key": {
           "type": "string",
           "minLength": 32
         },
@@ -466,6 +476,12 @@ func init() {
               }
             }
           },
+          "409": {
+            "description": "device exists",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "default": {
             "description": "error",
             "schema": {
@@ -732,15 +748,15 @@ func init() {
         },
         "public_key": {
           "type": "string",
-          "minLength": 32
+          "minLength": 32,
+          "readOnly": true
         }
       }
     },
     "WireguardPeer": {
       "type": "object",
       "required": [
-        "public_key",
-        "allowed_ips"
+        "public_key"
       ],
       "properties": {
         "allowed_ips": {
@@ -754,6 +770,10 @@ func init() {
           "readOnly": true
         },
         "preshared_key": {
+          "type": "string",
+          "minLength": 32
+        },
+        "private_key": {
           "type": "string",
           "minLength": 32
         },

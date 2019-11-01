@@ -35,6 +35,7 @@ type WireguardDevice struct {
 	PrivateKey *string `json:"private_key"`
 
 	// public key
+	// Read Only: true
 	// Min Length: 32
 	PublicKey string `json:"public_key,omitempty"`
 }

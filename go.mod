@@ -19,4 +19,5 @@ require (
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20191008142428-8d021180e987
+	gopkg.in/ini.v1 v1.49.0
 )

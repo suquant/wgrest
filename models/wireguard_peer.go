@@ -18,7 +18,6 @@ import (
 type WireguardPeer struct {
 
 	// allowed ips
-	// Required: true
 	AllowedIps []string `json:"allowed_ips"`
 
 	// peer id
@@ -28,6 +27,10 @@ type WireguardPeer struct {
 	// preshared key
 	// Min Length: 32
 	PresharedKey string `json:"preshared_key,omitempty"`
+
+	// private key
+	// Min Length: 32
+	PrivateKey string `json:"private_key,omitempty"`
 
 	// public key
 	// Required: true
@@ -39,11 +42,11 @@ type WireguardPeer struct {
 func (m *WireguardPeer) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAllowedIps(formats); err != nil {
+	if err := m.validatePresharedKey(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.validatePresharedKey(formats); err != nil {
+	if err := m.validatePrivateKey(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -57,15 +60,6 @@ func (m *WireguardPeer) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *WireguardPeer) validateAllowedIps(formats strfmt.Registry) error {
-
-	if err := validate.Required("allowed_ips", "body", m.AllowedIps); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *WireguardPeer) validatePresharedKey(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.PresharedKey) { // not required
@@ -73,6 +67,19 @@ func (m *WireguardPeer) validatePresharedKey(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MinLength("preshared_key", "body", string(m.PresharedKey), 32); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WireguardPeer) validatePrivateKey(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PrivateKey) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("private_key", "body", string(m.PrivateKey), 32); err != nil {
 		return err
 	}
 

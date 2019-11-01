@@ -59,6 +59,50 @@ func (o *DeviceCreateCreated) WriteResponse(rw http.ResponseWriter, producer run
 	rw.WriteHeader(201)
 }
 
+// DeviceCreateConflictCode is the HTTP code returned for type DeviceCreateConflict
+const DeviceCreateConflictCode int = 409
+
+/*DeviceCreateConflict device exists
+
+swagger:response deviceCreateConflict
+*/
+type DeviceCreateConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeviceCreateConflict creates DeviceCreateConflict with default headers values
+func NewDeviceCreateConflict() *DeviceCreateConflict {
+
+	return &DeviceCreateConflict{}
+}
+
+// WithPayload adds the payload to the device create conflict response
+func (o *DeviceCreateConflict) WithPayload(payload *models.Error) *DeviceCreateConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the device create conflict response
+func (o *DeviceCreateConflict) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeviceCreateConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*DeviceCreateDefault error
 
 swagger:response deviceCreateDefault
