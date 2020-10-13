@@ -207,9 +207,13 @@ func getWGPeerByPeerID(dev, peerID string) (*wgtypes.Peer, error) {
 		return nil, err
 	}
 
-	publicKey := string(decodedPublicKey)
+	publicKey, err := wgtypes.NewKey(decodedPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
 	for _, p := range wg.Peers {
-		if p.PublicKey.String() == publicKey {
+		if p.PublicKey.String() == publicKey.String() {
 			return &p, nil
 		}
 	}
@@ -218,12 +222,7 @@ func getWGPeerByPeerID(dev, peerID string) (*wgtypes.Peer, error) {
 }
 
 func getPeerID(peer wgtypes.Peer) (string, error) {
-	decodedPublicKey, err := base64.URLEncoding.DecodeString(peer.PublicKey.String())
-	if err != nil {
-		return "", err
-	}
-
-	return string(decodedPublicKey), nil
+	return base64.URLEncoding.EncodeToString(peer.PublicKey[:]), nil
 }
 
 func getWgConfPath(dev string) string {
