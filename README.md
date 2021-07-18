@@ -102,3 +102,7 @@ curl -v -g \
     -X DELETE \
     http://127.0.0.1:8000/devices/wg0/peers/hQ1yeyFy-bZn_5jpQNNrZ8MTIGaimZxT6LbWAkvmKjA=/
 ```
+
+Credits:
+ - ForestVPN.com [Free VPN](https://forestvpn.com) for all
+ - SpaceV.net [VPN for teams](https://spacev.net)
