@@ -52,6 +52,7 @@ func DeviceCreateHandler(
 			&models.Error{Detail: msg},
 		)
 	}
+	defer client.Close()
 
 	privateKey, err := wgtypes.ParseKey(*params.Device.PrivateKey)
 	if err != nil {

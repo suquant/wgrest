@@ -28,6 +28,7 @@ func getWGDeviceByName(name string) (*wgtypes.Device, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
 	wgDevice, err := client.Device(name)
 	if err != nil {
@@ -85,6 +86,7 @@ func GetDevices() ([]*models.WireguardDevice, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
 	wgDevices, err := client.Devices()
 	if err != nil {
@@ -114,6 +116,7 @@ func addOrRemovePeer(dev string, peer *wgtypes.Peer, remove bool) error {
 	if err != nil {
 		return err
 	}
+	defer client.Close()
 
 	var presharedKey *wgtypes.Key
 	if len(peer.PresharedKey) > 0 {
