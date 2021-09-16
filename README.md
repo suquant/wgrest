@@ -3,7 +3,7 @@ WireGuard REST API
 
 WireGuard is an simple and modern VPN. It is cross-platform (Windows, macOS, BSD, iOS, Android).
 
-👉 Looking for Vue/React js developer to do UI interface for wgrest. Since there is no UI the first initiator could choose technology.
+👉 Looking for Vue js developer to do UI interface for wgrest.
 For more details get in touch with [me](https://github.com/suquant).
 
 
