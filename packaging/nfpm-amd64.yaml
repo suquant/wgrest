@@ -1,0 +1,26 @@
+name: "wgrest"
+arch: "amd64"
+platform: "linux"
+version: "${VERSION}"
+maintainer: ForestVPN.com
+depends:
+  - wireguard
+contents:
+  - src: dist/wgrest-linux-amd64
+    dst: /usr/local/bin/wgrest
+  - src: packaging/wgrest.service
+    dst: /etc/systemd/system/wgrest.service
+    type: config
+  - src: packaging/default
+    dst: /etc/default/wgrest
+    type: config
+  - src: packaging/wgrest.conf
+    dst: /etc/wgrest/wgrest.conf
+    type: config
+overrides:
+  deb:
+    scripts:
+      preinstall: ./packaging/preinstall.sh
+      postinstall: ./packaging/postinstall.sh
+      preremove: ./packaging/preremove.sh
+      postremove: ./packaging/postremove.sh

@@ -1,18 +1,25 @@
-FROM alpine:3.10
+FROM golang:1.17.3-alpine3.14 as build-env
+LABEL maintainer="ForestVPN.com <support@forestvpn.com>"
 
-RUN apk add -U wireguard-tools
-RUN apk add -U --virtual .build-deps build-base libmnl-dev git gcc wget 
+RUN apk add --no-cache git gcc
+RUN mkdir /app
 
-RUN cd /tmp/ \
-    && git clone https://github.com/WireGuard/wg-dynamic.git \
-    && cd wg-dynamic \
-    && sed -i 's/install: wg/install: all/g' Makefile \
-    && make \
-    && make install || true
+WORKDIR /app
 
-RUN apk del .build-deps
+COPY . .
 
-COPY dist/wgrest-linux-amd64 /usr/bin/wgrest
+RUN export appVersion=$(git describe --tags `git rev-list -1 HEAD`) && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+      -ldflags "-X main.appVersion=$appVersion" \
+      -o wgrest cmd/wgrest-server/main.go
 
-ENTRYPOINT ["/usr/bin/wgrest"]
-CMD ["--scheme", "http", "--host", "0.0.0.0", "--port", "8000"]
+FROM alpine:3.14
+LABEL maintainer="ForestVPN.com <support@forestvpn.com>"
+
+COPY --from=build-env /app/wgrest .
+
+EXPOSE 8080/tcp
+
+USER 1001
+
+ENTRYPOINT ["./wgrest"]

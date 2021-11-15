@@ -1,0 +1,32 @@
+{
+  "name": "wgrest",
+  "version": "1.0.1",
+  "description": "wgrest client for javascript. Manage WireGuard VPN tunnels by RESTful manner.",
+  "author": "ForestVPN",
+  "keywords": [
+    "wireguard",
+    "api",
+    "rest",
+    "wgrest",
+    "restful",
+    "vpn",
+    "tunneling",
+    "wg",
+    "forestvpn",
+    "wireguard-ui"
+  ],
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --outDir dist/",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "@types/node": "^12.11.5",
+    "typescript": "^3.6.4"
+  }
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=wgrest - REST API for WireGuard
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User=wgrest
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+EnvironmentFile=/etc/default/wgrest
+ExecStart=/usr/local/bin/wgrest
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

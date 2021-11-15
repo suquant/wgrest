@@ -1,0 +1,10 @@
+.docs/api/openapi.yaml
+main.go
+models/hello-world.go
+models/model_device.go
+models/model_device_create_or_update_request.go
+models/model_device_options.go
+models/model_device_options_update_request.go
+models/model_error.go
+models/model_peer.go
+models/model_peer_create_or_update_request.go

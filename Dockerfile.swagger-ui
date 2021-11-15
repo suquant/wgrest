@@ -1,0 +1,9 @@
+FROM swaggerapi/swagger-ui:v4.1.0
+LABEL maintainer="ForestVPN.com <support@forestvpn.com>"
+
+COPY openapi-spec.yaml /var/www/api.spec.yaml
+
+ENV BASE_URL=/
+ENV SWAGGER_JSON=/var/www/api.spec.yaml
+
+EXPOSE 8080

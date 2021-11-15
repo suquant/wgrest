@@ -1,0 +1,73 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+volumes:
+  - name: cache
+    temp: { }
+
+environment:
+  GOCACHE: /go/go-build
+  GOMODCACHE: /go/go-download
+
+steps:
+  - name: deps
+    image: golang:1.17.3-alpine3.14
+    volumes:
+      - name: cache
+        path: /go
+    commands:
+      - apk --no-cache add git
+      - go get -t -d -v ./...
+      - go build all
+
+---
+kind: pipeline
+type: docker
+name: deploy
+
+volumes:
+  - name: dist
+    temp: { }
+
+steps:
+  - name: build
+    image: golang:1.17.3-alpine3.14
+    volumes:
+      - name: dist
+        path: dist
+    commands:
+      - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
+      - apk --no-cache add build-base nfpm
+      - make build
+      - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/
+      - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/
+    when:
+      event:
+        - tag
+        - promote
+
+  - name: github release
+    image: plugins/github-release
+    volumes:
+      - name: dist
+        path: dist
+    settings:
+      api_key:
+        from_secret: github_token
+      files: dist/*
+      checksum:
+        - md5
+        - sha1
+    when:
+      event:
+        - tag
+        - promote
+    depends_on:
+      - build
+
+trigger:
+  event:
+    - promote
+    - tag
