@@ -36,7 +36,7 @@ steps:
     image: golang:1.17.3-alpine3.14
     volumes:
       - name: dist
-        path: dist
+        path: /drone/src/dist
     commands:
       - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
       - apk --no-cache add build-base nfpm
@@ -52,7 +52,7 @@ steps:
     image: plugins/github-release
     volumes:
       - name: dist
-        path: dist
+        path: /drone/src/dist
     settings:
       api_key:
         from_secret: github_token
