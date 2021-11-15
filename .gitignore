@@ -12,6 +12,7 @@
 *.out
 
 dist/
+clients/
 .DS_Store
 .vscode
 .idea
