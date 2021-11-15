@@ -1,6 +1,7 @@
 BUILDDIR ?= dist
 OSS ?= linux darwin freebsd windows
 ARCHS ?= amd64 arm64
+VERSION ?= $(shell git describe --tags `git rev-list -1 HEAD`)
 
 build: $(BUILDDIR)/wgrest
 
@@ -10,13 +11,12 @@ clean:
 install: build
 
 define wgrest
-$(BUILDDIR)/wgrest-$(1)-$(2): export appVersion=$$(git describe --tags `git rev-list -1 HEAD`)
 $(BUILDDIR)/wgrest-$(1)-$(2): export CGO_ENABLED := 0
 $(BUILDDIR)/wgrest-$(1)-$(2): export GOOS := $(1)
 $(BUILDDIR)/wgrest-$(1)-$(2): export GOARCH := $(2)
 $(BUILDDIR)/wgrest-$(1)-$(2):
 	go build \
-	-ldflags="-s -w -X main.appVersion=$${appVersion}" \
+	-ldflags="-s -w -X main.appVersion=$(VERSION)" \
 	-trimpath -v -o "$(BUILDDIR)/wgrest-$(1)-$(2)" \
 	cmd/wgrest-server/main.go
 endef
