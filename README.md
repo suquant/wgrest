@@ -1,4 +1,5 @@
-# wgrest
+# wgrest 
+[![Build Status](https://drone.forestvpn.com/api/badges/suquant/wgrest/status.svg)](https://drone.forestvpn.com/suquant/wgrest)
 
 WireGuard REST API
 
