@@ -21,7 +21,7 @@ Check all features [here](https://wgrest.forestvpn.com/swagger/)
 ## Install
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/download/v1.0.0/wgrest-linux-amd64 -o wgrest
+curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha1/wgrest-linux-amd64 -o wgrest
 
 chmod +x wgrest
 ```
@@ -29,7 +29,7 @@ chmod +x wgrest
 ## Run WireGuard REST API Server
 
 ```shell
-wgrest --listen ":8080"
+wgrest --static-auth-token "secret" --listen "127.0.0.1:8080"
 ```
 
 ```shell
