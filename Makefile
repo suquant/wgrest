@@ -35,6 +35,7 @@ go-echo-server:
 
 typescript-axios-client:
 	swagger-codegen generate -l typescript-axios \
+		--additional-properties modelPropertyNaming=original \
 		-i openapi-spec.yaml \
 		-o clients/typeascript-axios
 
