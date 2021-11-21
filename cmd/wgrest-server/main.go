@@ -114,7 +114,7 @@ func main() {
 				Skipper:          middleware.DefaultSkipper,
 				AllowOrigins:     []string{"*"},
 				AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-				AllowHeaders:     []string{"Link", "Authorization"},
+				AllowHeaders:     []string{"Content-Type", "Accept", "Accept-Language", "Link", "Authorization"},
 				AllowCredentials: true,
 			}))
 
