@@ -12,6 +12,7 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -168,7 +169,15 @@ func (c *WireGuardContainer) DeleteDevice(ctx echo.Context) error {
 // DeleteDevicePeer - Delete device's peer
 func (c *WireGuardContainer) DeleteDevicePeer(ctx echo.Context) error {
 	name := ctx.Param("name")
-	urlSafePubKey := ctx.Param("urlSafePubKey")
+	urlSafePubKey, err := url.QueryUnescape(ctx.Param("urlSafePubKey"))
+	if err != nil {
+		ctx.Logger().Errorf("failed to parse pub key: %s", err)
+		return ctx.JSON(http.StatusBadRequest, models.Error{
+			Code:    "request_params_error",
+			Message: err.Error(),
+		})
+	}
+
 	pubKey, err := wgtypes.ParseKey(urlSafePubKey)
 	if err != nil {
 		ctx.Logger().Errorf("failed to parse wireguard public key: %s", err)
@@ -254,7 +263,14 @@ func (c *WireGuardContainer) GetDevice(ctx echo.Context) error {
 // GetDevicePeer - Get device peer info
 func (c *WireGuardContainer) GetDevicePeer(ctx echo.Context) error {
 	name := ctx.Param("name")
-	urlSafePubKey := ctx.Param("urlSafePubKey")
+	urlSafePubKey, err := url.QueryUnescape(ctx.Param("urlSafePubKey"))
+	if err != nil {
+		ctx.Logger().Errorf("failed to parse pub key: %s", err)
+		return ctx.JSON(http.StatusBadRequest, models.Error{
+			Code:    "request_params_error",
+			Message: err.Error(),
+		})
+	}
 	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
 	if err != nil {
 		ctx.Logger().Errorf("failed to parse pub key: %s", err)
@@ -496,7 +512,14 @@ func (c *WireGuardContainer) UpdateDevice(ctx echo.Context) error {
 // UpdateDevicePeer - Update device's peer
 func (c *WireGuardContainer) UpdateDevicePeer(ctx echo.Context) error {
 	name := ctx.Param("name")
-	urlSafePubKey := ctx.Param("urlSafePubKey")
+	urlSafePubKey, err := url.QueryUnescape(ctx.Param("urlSafePubKey"))
+	if err != nil {
+		ctx.Logger().Errorf("failed to parse pub key: %s", err)
+		return ctx.JSON(http.StatusBadRequest, models.Error{
+			Code:    "request_params_error",
+			Message: err.Error(),
+		})
+	}
 	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
 	if err != nil {
 		ctx.Logger().Errorf("failed to parse pub key: %s", err)
@@ -616,7 +639,11 @@ func (c *WireGuardContainer) UpdateDevicePeer(ctx echo.Context) error {
 
 func (c *WireGuardContainer) getDevicePeerQuickConfig(ctx echo.Context) (io.Reader, error) {
 	name := ctx.Param("name")
-	urlSafePubKey := ctx.Param("urlSafePubKey")
+	urlSafePubKey, err := url.QueryUnescape(ctx.Param("urlSafePubKey"))
+	if err != nil {
+		return nil, err
+	}
+
 	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
 	if err != nil {
 		return nil, err
