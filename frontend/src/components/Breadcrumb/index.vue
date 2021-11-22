@@ -52,12 +52,21 @@ export default class extends Vue {
     const first = matched[0]
     if (!this.isDashboard(first)) {
       matched = [
-        { path: '/dashboard', meta: { title: 'Dashboard' } } as unknown as RouteRecord
+        { path: '/', meta: { title: 'Devices' } } as unknown as RouteRecord
       ].concat(matched)
     }
     this.breadcrumbs = matched.filter(item => {
       return item.meta && item.meta.title && item.meta.breadcrumb !== false
     })
+
+    if (Object.keys(this.$route.params).includes('id')) {
+      this.breadcrumbs.push({
+        meta: {
+          title: this.$route.params.id
+        },
+        path: '#'
+      } as RouteRecord)
+    }
   }
 
   private isDashboard(route: RouteRecord) {

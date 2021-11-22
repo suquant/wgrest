@@ -24,6 +24,7 @@
     "vue-router": "3.5.1",
     "vue-svgicon": "3.2.9",
     "vuex": "3.6.2",
+    "mitt": "^2.1.0",
     "vuex-module-decorators": "1.0.1",
     "wgrest": "^1.0.3"
   },

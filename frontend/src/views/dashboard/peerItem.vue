@@ -5,13 +5,25 @@
         <i class="el-icon-setting" @click="drawer = true"></i>
       </div>
       <div class="text item">
-        <div class="qr__code">
-          qr
-        </div>
         <div class="info__peer">
           <span>receive: {{ item.receive_bytes }}</span>
           <span>transmit: {{ item.transmit_bytes }}</span>
         </div>
+      </div>
+      <div class="peer__buttons">
+        <el-button
+          type="primary"
+          @click="getQrCode"
+        >
+          qr code
+        </el-button>
+        <el-button
+          icon="el-icon-download"
+          type="info"
+          @click="getQuickConf"
+        >
+          quick.conf
+        </el-button>
       </div>
       <el-drawer
         :title="`${item.url_safe_public_key}`"
@@ -29,6 +41,13 @@
           <span>allowed_ips: {{ item.allowed_ips.join(',') }}</span>
         </div>
       </el-drawer>
+      <el-dialog
+        title="QR Code"
+        :visible.sync="dialogVisible"
+        width="30%"
+      >
+        <img :src="qrCode" alt="">
+      </el-dialog>
     </el-card>
 </template>
 
@@ -44,16 +63,23 @@ export default class peerItem extends Vue {
   @Prop({ default: {} }) item!: Peer
 
   private drawer = false
+  private dialogVisible = false
 
   private qrCode = ''
 
   public async getQrCode(): Promise<void> {
     const { data } = await deviceApi.getDevicePeerQuickConfigQRCodePNG(this.$route.params.id, this.item.url_safe_public_key)
     this.qrCode = data
+    this.dialogVisible = true
   }
 
-  created() {
-    this.getQrCode()
+  public async getQuickConf(): Promise<void> {
+    const { data } = await deviceApi.getDevicePeerQuickConfig(this.$route.params.id, this.item.url_safe_public_key)
+    const blob = new Blob([data])
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = `${this.item.url_safe_public_key}[config].txt`
+    link.click()
   }
 }
 </script>
@@ -114,5 +140,12 @@ export default class peerItem extends Vue {
   span {
     margin-bottom: 20px;
   }
+}
+
+.peer__buttons {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>

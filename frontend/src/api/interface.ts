@@ -1,6 +1,8 @@
 import { DeviceApi } from 'wgrest'
 import { openModal } from '@/utils/modal'
 
+import { Message } from 'element-ui'
+
 class API extends DeviceApi {
   constructor() {
     super({
@@ -15,6 +17,8 @@ class API extends DeviceApi {
     this.axios.interceptors.response.use(
       response => response,
       (error) => {
+        Message.error(error.response.data.message)
+
         const originalConfig = error.config
 
         if (

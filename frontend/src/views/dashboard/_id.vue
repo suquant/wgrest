@@ -14,6 +14,7 @@ import { deviceApi } from '@/api/interface'
 import { Peer } from 'wgrest/dist/models'
 
 import peerItem from '@/views/dashboard/peerItem.vue'
+import { emitter } from '@/utils/emmiter'
 
 @Component({
   name: 'Peer',
@@ -32,6 +33,7 @@ export default class extends Vue {
 
   created() {
     this.getPeerList()
+    emitter.on('updatePeer', this.getPeerList)
   }
 }
 </script>

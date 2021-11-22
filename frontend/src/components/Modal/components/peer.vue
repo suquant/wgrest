@@ -21,6 +21,7 @@
       placeholder="Allowed Ips"
       v-model="newPeerForm.allowed_ips"
     ></el-input>
+    <span class="input__info">127.0.0.1, 127.0.0.1</span>
     <el-input
       class="device_form"
       placeholder="Persistent KeepAlive Interval"
@@ -42,6 +43,8 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { deviceApi } from '@/api/interface'
 
+import { emitter } from '@/utils/emmiter'
+
 @Component({
   name: 'DeviceModal'
 })
@@ -56,14 +59,22 @@ export default class DeviceModal extends Vue {
   }
 
   public async createDevice(): Promise<void> {
-    console.log(this.newPeerForm)
+    const newPeerData = JSON.parse(JSON.stringify(this.newPeerForm))
+
+    Object.keys(newPeerData).forEach(key => {
+      if (!newPeerData[key]) {
+        delete newPeerData[key]
+      }
+    })
+
     const newPeer = {
-      ...this.newPeerForm,
-      allowed_ips: this.newPeerForm.allowed_ips.split(',')
+      ...newPeerData,
+      allowed_ips: Object.keys(newPeerData).includes('allowed_ips') ? newPeerData.allowed_ips.split(',') : null
     }
 
-    console.log(newPeer)
     await deviceApi.createDevicePeer(this.$route.params.id, newPeer)
+    this.$emit('close')
+    emitter.emit('updatePeer')
   }
 }
 </script>
@@ -81,5 +92,13 @@ export default class DeviceModal extends Vue {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.input__info {
+  color: gray;
+  font-size: 10px;
+  display: block;
+  position: relative;
+  top: -20px;
 }
 </style>
