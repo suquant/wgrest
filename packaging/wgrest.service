@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 User=wgrest
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
 EnvironmentFile=/etc/default/wgrest
-ExecStart=/usr/local/bin/wgrest
+ExecStart=/usr/local/bin/wgrest --conf /etc/wgrest/wgrest.conf
 Restart=always
 RestartSec=1
 
