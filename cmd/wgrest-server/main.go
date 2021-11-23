@@ -100,6 +100,10 @@ func main() {
 			// Basic middleware
 			e.Use(middleware.Logger())
 			e.Use(middleware.Recover())
+			e.Pre(middleware.Rewrite(map[string]string{
+				"^/devices":   "/",
+				"^/devices/*": "/",
+			}))
 
 			e.GET("/version", getVersionHandler)
 
