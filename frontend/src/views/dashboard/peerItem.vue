@@ -46,7 +46,9 @@
         :visible.sync="dialogVisible"
         width="30%"
       >
-        <img :src="qrCode" alt="">
+        <div class="qr__dialog">
+          <img :src="qrCode" alt="">
+        </div>
       </el-dialog>
     </el-card>
 </template>
@@ -65,11 +67,12 @@ export default class peerItem extends Vue {
   private drawer = false
   private dialogVisible = false
 
-  private qrCode = ''
+  private qrCode: string | unknown = ''
 
   public async getQrCode(): Promise<void> {
-    const { data } = await deviceApi.getDevicePeerQuickConfigQRCodePNG(this.$route.params.id, this.item.url_safe_public_key)
-    this.qrCode = data
+    const { data } = await deviceApi.getDevicePeerQuickConfigQRCodePNG(this.$route.params.id, this.item.url_safe_public_key, '', { responseType: 'arraybuffer' })
+    const blob = new Blob([data])
+    this.qrCode = URL.createObjectURL(blob)
     this.dialogVisible = true
   }
 
@@ -147,5 +150,11 @@ export default class peerItem extends Vue {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.qr__dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
