@@ -41,6 +41,8 @@ steps:
     image: golang:1.17.3-alpine3.14
     privileged: true
     volumes:
+      - name: cache
+        path: /cache
       - name: dist
         path: /drone/src/dist
     commands:
@@ -49,10 +51,6 @@ steps:
       - make build
     depends_on:
       - go deps
-    when:
-      event:
-        - tag
-        - promote
 
   - name: build wgrest ui
     image: node:14.18.1
@@ -64,21 +62,19 @@ steps:
         path: /drone/src/dist
     commands:
       - cd frontend
-      - yarn build --dist ../dist/public
+      - yarn build --dest ../dist/public
     depends_on:
       - node deps
-    when:
-      event:
-        - tag
 
   - name: build
     image: alpine:3.14.3
+    privileged: true
     volumes:
       - name: dist
         path: /drone/src/dist
     commands:
       - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
-      - apk --no-cache add build-base nfpm
+      - apk --no-cache add nfpm
       - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/
       - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/
       - cd dist
@@ -100,12 +96,13 @@ steps:
       checksum:
         - md5
         - sha1
+    depends_on:
+      - build
     when:
       event:
         - tag
-    depends_on:
-      - build
 
 trigger:
   event:
+    - push
     - tag

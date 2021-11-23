@@ -1,4 +1,5 @@
-# wgrest 
+# wgrest
+
 [![Build Status](https://drone.forestvpn.com/api/badges/suquant/wgrest/status.svg)](https://drone.forestvpn.com/suquant/wgrest)
 
 WireGuard REST API
@@ -7,8 +8,8 @@ WireGuard is an simple and modern VPN. It is cross-platform (Windows, macOS, BSD
 
 Swagger UI: https://wgrest.forestvpn.com/swagger/
 
- * | * | * | *
-:---:|:---:|:---:|:---:|
+1|2|3|4
+:---:|:---:|:---:|:---:
 [![Devices list](examples/screenshots/wgrest-devices-list.jpg)](examples/screenshots/wgrest-devices-list.jpg) | [![Device's peers list](examples/screenshots/wgrest-device-peers-list.jpg)](examples/screenshots/wgrest-device-peers-list.jpg) | [![Device's peers list](examples/screenshots/wgrest-device-peer-info.jpg)](examples/screenshots/wgrest-device-peer-info.jpg) | [![Add new peer](examples/screenshots/wgrest-add-new-peer.jpg)](examples/screenshots/wgrest-add-new-peer.jpg)
 
 ## Features:
