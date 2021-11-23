@@ -88,7 +88,7 @@ steps:
     image: plugins/github-release
     volumes:
       - name: dist
-        path: /dist
+        path: /drone/src/dist
     settings:
       api_key:
         from_secret: github_token
