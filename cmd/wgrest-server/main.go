@@ -97,9 +97,20 @@ func main() {
 			e := echo.New()
 			e.HideBanner = true
 
+			// Basic middleware
+			e.Use(middleware.Logger())
+			e.Use(middleware.Recover())
+			e.Pre(middleware.Rewrite(map[string]string{
+				"^/devices":   "/",
+				"^/devices/*": "/",
+			}))
+
 			e.GET("/version", getVersionHandler)
 
 			dataDir := c.String("data-dir")
+			e.File("/", path.Join(dataDir, "public", "index.html"))
+			e.Static("/", path.Join(dataDir, "public"))
+
 			cacheDir := path.Join(dataDir, ".cache")
 			tlsDomains := c.StringSlice("tls-domain")
 			if len(tlsDomains) > 0 {
@@ -107,10 +118,8 @@ func main() {
 				e.AutoTLSManager.Cache = autocert.DirCache(cacheDir)
 			}
 
-			// Middleware
-			e.Use(middleware.Logger())
-			e.Use(middleware.Recover())
-			e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			v1 := e.Group("/v1")
+			v1.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 				Skipper:          middleware.DefaultSkipper,
 				AllowOrigins:     []string{"*"},
 				AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
@@ -120,7 +129,7 @@ func main() {
 
 			staticAuthToken := c.String("static-auth-token")
 			if staticAuthToken != "" {
-				e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+				v1.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
 					return key == staticAuthToken, nil
 				}))
 			}
@@ -153,46 +162,46 @@ func main() {
 			}
 
 			// CreateDevice - Create new device
-			e.POST("/v1/devices/", wc.CreateDevice)
+			v1.POST("/devices/", wc.CreateDevice)
 
 			// CreateDevicePeer - Create new device peer
-			e.POST("/v1/devices/:name/peers/", wc.CreateDevicePeer)
+			v1.POST("/devices/:name/peers/", wc.CreateDevicePeer)
 
 			// DeleteDevice - Delete Device
-			e.DELETE("/v1/devices/:name/", wc.DeleteDevice)
+			v1.DELETE("/devices/:name/", wc.DeleteDevice)
 
 			// DeleteDevicePeer - Delete device's peer
-			e.DELETE("/v1/devices/:name/peers/:urlSafePubKey/", wc.DeleteDevicePeer)
+			v1.DELETE("/devices/:name/peers/:urlSafePubKey/", wc.DeleteDevicePeer)
 
 			// GetDevice - Get device info
-			e.GET("/v1/devices/:name/", wc.GetDevice)
+			v1.GET("/devices/:name/", wc.GetDevice)
 
 			// GetDevicePeer - Get device peer info
-			e.GET("/v1/devices/:name/peers/:urlSafePubKey/", wc.GetDevicePeer)
+			v1.GET("/devices/:name/peers/:urlSafePubKey/", wc.GetDevicePeer)
 
 			// ListDevicePeers - Peers list
-			e.GET("/v1/devices/:name/peers/", wc.ListDevicePeers)
+			v1.GET("/devices/:name/peers/", wc.ListDevicePeers)
 
 			// ListDevices - Devices list
-			e.GET("/v1/devices/", wc.ListDevices)
+			v1.GET("/devices/", wc.ListDevices)
 
 			// UpdateDevice - Update device
-			e.PATCH("/v1/devices/:name/", wc.UpdateDevice)
+			v1.PATCH("/devices/:name/", wc.UpdateDevice)
 
 			// UpdateDevicePeer - Update device's peer
-			e.PATCH("/v1/devices/:name/peers/:urlSafePubKey/", wc.UpdateDevicePeer)
+			v1.PATCH("/devices/:name/peers/:urlSafePubKey/", wc.UpdateDevicePeer)
 
 			// GetDevicePeerQuickConfig - Get device peer quick config
-			e.GET("/v1/devices/:name/peers/:urlSafePubKey/quick.conf", wc.GetDevicePeerQuickConfig)
+			v1.GET("/devices/:name/peers/:urlSafePubKey/quick.conf", wc.GetDevicePeerQuickConfig)
 
 			// GetDevicePeerQuickConfigQRCodePNG - Get device peer quick config QR code
-			e.GET("/v1/devices/:name/peers/:urlSafePubKey/quick.conf.png", wc.GetDevicePeerQuickConfigQRCodePNG)
+			v1.GET("/devices/:name/peers/:urlSafePubKey/quick.conf.png", wc.GetDevicePeerQuickConfigQRCodePNG)
 
 			// GetDeviceOptions - Get device options
-			e.GET("/v1/devices/:name/options/", wc.GetDeviceOptions)
+			v1.GET("/devices/:name/options/", wc.GetDeviceOptions)
 
 			// UpdateDeviceOptions - Update device's options
-			e.PATCH("/v1/devices/:name/options/", wc.UpdateDeviceOptions)
+			v1.PATCH("/devices/:name/options/", wc.UpdateDeviceOptions)
 
 			listen := c.String("listen")
 			// Start server
