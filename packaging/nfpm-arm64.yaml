@@ -8,6 +8,8 @@ depends:
 contents:
   - src: dist/wgrest-linux-arm64
     dst: /usr/local/bin/wgrest
+  - src: dist/public
+    dst: /var/lib/wgrest/public
   - src: packaging/wgrest.service
     dst: /etc/systemd/system/wgrest.service
     type: config

@@ -3,36 +3,41 @@ kind: pipeline
 type: docker
 name: default
 
+workspace:
+  path: /drone/src
+
 volumes:
   - name: cache
     temp: { }
+  - name: dist
+    temp: { }
 
 environment:
-  GOCACHE: /go/go-build
-  GOMODCACHE: /go/go-download
+  GOCACHE: /cache/go/build
+  GOMODCACHE: /cache/go/download
+  NPM_CONFIG_CACHE: /cache/npm/cache
 
 steps:
-  - name: deps
+  - name: go deps
     image: golang:1.17.3-alpine3.14
     volumes:
       - name: cache
-        path: /go
+        path: /cache
     commands:
       - apk --no-cache add git
       - go get -t -d -v ./...
       - go build all
 
----
-kind: pipeline
-type: docker
-name: deploy
+  - name: node deps
+    image: node:14.18.1
+    volumes:
+      - name: cache
+        path: /cache
+    commands:
+      - cd frontend
+      - yarn install --non-interactive
 
-volumes:
-  - name: dist
-    temp: { }
-
-steps:
-  - name: build
+  - name: build wgrest server
     image: golang:1.17.3-alpine3.14
     privileged: true
     volumes:
@@ -40,20 +45,54 @@ steps:
         path: /drone/src/dist
     commands:
       - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
-      - apk --no-cache add build-base nfpm
+      - apk --no-cache add build-base
       - make build
-      - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/
-      - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/
+    depends_on:
+      - go deps
     when:
       event:
         - tag
         - promote
 
+  - name: build wgrest ui
+    image: node:14.18.1
+    privileged: true
+    volumes:
+      - name: cache
+        path: /cache
+      - name: dist
+        path: /drone/src/dist
+    commands:
+      - cd frontend
+      - yarn build --dist ../dist/public
+    depends_on:
+      - node deps
+    when:
+      event:
+        - tag
+
+  - name: build
+    image: alpine:3.14.3
+    volumes:
+      - name: dist
+        path: /drone/src/dist
+    commands:
+      - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
+      - apk --no-cache add build-base nfpm
+      - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/
+      - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/
+      - cd dist
+      - tar -czvf public.tar.gz public
+      - rm -rf public
+    depends_on:
+      - build wgrest server
+      - build wgrest ui
+
   - name: github release
     image: plugins/github-release
     volumes:
       - name: dist
-        path: /drone/src/dist
+        path: /dist
     settings:
       api_key:
         from_secret: github_token
@@ -64,11 +103,9 @@ steps:
     when:
       event:
         - tag
-        - promote
     depends_on:
       - build
 
 trigger:
   event:
-    - promote
     - tag

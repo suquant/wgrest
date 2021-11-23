@@ -100,6 +100,9 @@ func main() {
 			e.GET("/version", getVersionHandler)
 
 			dataDir := c.String("data-dir")
+			e.File("/", path.Join(dataDir, "public", "index.html"))
+			e.Static("/", path.Join(dataDir, "public"))
+
 			cacheDir := path.Join(dataDir, ".cache")
 			tlsDomains := c.StringSlice("tls-domain")
 			if len(tlsDomains) > 0 {

@@ -7,6 +7,10 @@ WireGuard is an simple and modern VPN. It is cross-platform (Windows, macOS, BSD
 
 Swagger UI: https://wgrest.forestvpn.com/swagger/
 
+ * | * | * | *
+:---:|:---:|:---:|:---:|
+[![Devices list](examples/screenshots/wgrest-devices-list.jpg)](examples/screenshots/wgrest-devices-list.jpg) | [![Device's peers list](examples/screenshots/wgrest-device-peers-list.jpg)](examples/screenshots/wgrest-device-peers-list.jpg) | [![Device's peers list](examples/screenshots/wgrest-device-peer-info.jpg)](examples/screenshots/wgrest-device-peer-info.jpg) | [![Add new peer](examples/screenshots/wgrest-add-new-peer.jpg)](examples/screenshots/wgrest-add-new-peer.jpg)
+
 ## Features:
 
 * Manage device: update wireguard interface
