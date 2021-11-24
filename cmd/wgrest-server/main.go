@@ -48,7 +48,7 @@ func main() {
 		altsrc.NewStringFlag(&cli.StringFlag{
 			Name:    "static-auth-token",
 			Value:   "",
-			Usage:   "It's used for bearer token authorization",
+			Usage:   "It is used for bearer token authorization",
 			EnvVars: []string{"WGREST_STATIC_AUTH_TOKEN"},
 		}),
 		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{

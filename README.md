@@ -50,7 +50,7 @@ GLOBAL OPTIONS:
    --version                   Print version and exit (default: false)
    --listen value              Listen address (default: "127.0.0.1:8000") [$WGREST_LISTEN]
    --data-dir value            Data dir (default: "/var/lib/wgrest") [$WGREST_DATA_DIR]
-   --static-auth-token value   It's used for bearer token authorization [$WGREST_STATIC_AUTH_TOKEN]
+   --static-auth-token value   It is used for bearer token authorization [$WGREST_STATIC_AUTH_TOKEN]
    --tls-domain value          TLS Domains [$WGREST_TLS_DOMAIN]
    --demo                      Demo mode (default: false) [$WGREST_DEMO]
    --device-allowed-ips value  Default device allowed ips. You can overwrite it through api (default: "0.0.0.0/0", "::0/0") [$WGREST_DEVICE_ALLOWED_IPS]
