@@ -192,9 +192,6 @@ curl -v -g \
     http://127.0.0.1:8000/v1/devices/wg0/peers/
 ```
 
-👉 Looking for Vue js developer to do UI interface for wgrest. For more details get in touch
-with [me](https://github.com/suquant).
-
 Credits:
 
 - ForestVPN.com [Free VPN](https://forestvpn.com) for all

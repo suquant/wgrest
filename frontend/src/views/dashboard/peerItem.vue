@@ -81,7 +81,7 @@ export default class peerItem extends Vue {
     const blob = new Blob([data])
     const link = document.createElement('a')
     link.href = window.URL.createObjectURL(blob)
-    link.download = `${this.item.url_safe_public_key}[config].txt`
+    link.download = `${this.item.url_safe_public_key}.conf`
     link.click()
   }
 }
