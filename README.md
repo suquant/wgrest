@@ -1,10 +1,11 @@
-# wgrest
-
+WGRest
+---
 [![Build Status](https://drone.forestvpn.com/api/badges/suquant/wgrest/status.svg)](https://drone.forestvpn.com/suquant/wgrest)
 
-WireGuard REST API
+WGRest is a WireGuard REST API server. It operates wireguard through IPC and doesn't require any dependencies. It aims
+to be simpler, faster, and usable on embedded devices such as routers or any other low power and low memory devices.
 
-WireGuard is an simple and modern VPN. It is cross-platform (Windows, macOS, BSD, iOS, Android).
+WireGuard is a simple and modern VPN. It is cross-platform (Windows, macOS, BSD, iOS, Android).
 
 Swagger UI: https://wgrest.forestvpn.com/swagger/
 
@@ -27,15 +28,41 @@ Check all features [here](https://wgrest.forestvpn.com/swagger/)
 ## Install
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha1/wgrest-linux-amd64 -o wgrest
+curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha8/wgrest-linux-amd64 -o wgrest
 
 chmod +x wgrest
+```
+
+```shell
+wgrest -h
+
+NAME:
+   wgrest - wgrest - rest api for wireguard
+
+USAGE:
+   wgrest [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --conf value                wgrest config file path (default: "/etc/wgrest/wgrest.conf") [$WGREST_CONF]
+   --version                   Print version and exit (default: false)
+   --listen value              Listen address (default: "127.0.0.1:8000") [$WGREST_LISTEN]
+   --data-dir value            Data dir (default: "/var/lib/wgrest") [$WGREST_DATA_DIR]
+   --static-auth-token value   It's used for bearer token authorization [$WGREST_STATIC_AUTH_TOKEN]
+   --tls-domain value          TLS Domains [$WGREST_TLS_DOMAIN]
+   --demo                      Demo mode (default: false) [$WGREST_DEMO]
+   --device-allowed-ips value  Default device allowed ips. You can overwrite it through api (default: "0.0.0.0/0", "::0/0") [$WGREST_DEVICE_ALLOWED_IPS]
+   --device-dns-servers value  Default device DNS servers. You can overwrite it through api (default: "8.8.8.8", "1.1.1.1", "2001:4860:4860::8888", "2606:4700:4700::1111") [$WGREST_DEVICE_DNS_SERVERS]
+   --device-host value         Default device host. You can overwrite it through api [$WGREST_DEVICE_HOST]
+   --help, -h                  show help (default: false)
 ```
 
 ## Run WireGuard REST API Server
 
 ```shell
-wgrest --static-auth-token "secret" --listen "127.0.0.1:8080"
+wgrest --static-auth-token "secret" --listen "127.0.0.1:8000"
 ```
 
 ```shell
@@ -43,6 +70,18 @@ Output:
 
 ⇨ http server started on 127.0.0.1:8000
 ```
+
+For Web UI support you need to:
+
+```shell
+curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha8/public.tar.gz -o wgrest-ui.tar.gz
+
+sudo mkdir -p /var/lib/wgrest/public
+sudo chown `whoami` /var/lib/wgrest/public
+tar -xzvf wgrest-ui.tar.gz --strip-components 1 -C /var/lib/wgrest/public
+```
+
+After run the server web ui will be available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ## Update **wg0** device
 
