@@ -31,7 +31,7 @@ WGRest optionally comes with web ui and it is not included by default into binar
 enable it.
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha8/wgrest-linux-amd64 -o wgrest
+curl -L https://github.com/suquant/wgrest/releases/latest/download/wgrest-linux-amd64 -o wgrest
 
 chmod +x wgrest
 ```
@@ -65,7 +65,7 @@ GLOBAL OPTIONS:
 For Web UI support you need to:
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha8/public.tar.gz -o wgrest-ui.tar.gz
+curl -L https://github.com/suquant/wgrest/releases/latest/download/public.tar.gz -o wgrest-ui.tar.gz
 
 sudo mkdir -p /var/lib/wgrest/public
 sudo chown `whoami` /var/lib/wgrest/public
