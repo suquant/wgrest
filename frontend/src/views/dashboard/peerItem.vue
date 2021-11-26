@@ -31,15 +31,25 @@
         direction="rtl"
         >
         <div class="detail__info">
-          <span>url_safe_public_key: {{ item.url_safe_public_key }}</span>
-          <span>public_key: {{ item.public_key }}</span>
-          <span>last_handshake_time: {{ item.last_handshake_time }}</span>
-          <span>persistent_keepalive_interval: {{ item.persistent_keepalive_interval }}</span>
+
+          <span>url_safe_public_key:</span>
+          <el-input v-model="item.url_safe_public_key" class="detail__info-input"></el-input>
+          <span>public_key</span>
+          <el-input v-model="item.public_key" class="detail__info-input"></el-input>
+          <span>last_handshake_time: {{ item.last_handshake_time | date }}</span>
+          <span>persistent_keepalive_interval</span>
+          <el-input v-model="item.persistent_keepalive_interval" class="detail__info-input"></el-input>
           <span>receive_bytes: {{ item.receive_bytes }}</span>
           <span>transmit_bytes: {{ item.transmit_bytes }}</span>
-          <span>endpoint: {{ item.endpoint }}</span>
-          <span>allowed_ips: {{ item.allowed_ips.join(',') }}</span>
+          <span>endpoint:</span>
+          <el-input v-model="item.endpoint" class="detail__info-input"></el-input>
+          <span>allowed_ips</span>
+          <el-input v-model="item.allowed_ips" class="detail__info-input"></el-input>
         </div>
+       <div class="detail__info-buttons">
+         <el-button type="primary" @click="savePeer">Save</el-button>
+         <el-button type="danger" @click="deletePeer">Delete</el-button>
+       </div>
       </el-drawer>
       <el-dialog
         title="QR Code"
@@ -59,7 +69,22 @@ import { Peer } from 'wgrest/dist/models'
 import { deviceApi } from '@/api/interface'
 
 @Component({
-  name: 'peerItem'
+  name: 'peerItem',
+
+  filters: {
+    date(value: string) {
+      const time = new Date(value)
+
+      const year = time.getFullYear()
+      const month = time.getMonth()
+      const day = time.getDate()
+
+      const hours = time.getHours()
+      const minutes = time.getMinutes()
+
+      return `${day < 10 ? `0${day}` : day}-${month < 10 ? `0${month}` : month}-${year} at ${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}`
+    }
+  }
 })
 export default class peerItem extends Vue {
   @Prop({ default: {} }) item!: Peer
@@ -83,6 +108,21 @@ export default class peerItem extends Vue {
     link.href = window.URL.createObjectURL(blob)
     link.download = `${this.item.url_safe_public_key}.conf`
     link.click()
+  }
+
+  private async savePeer(): Promise<void> {
+    const answer = await deviceApi.updateDevicePeer(this.$route.params.id, this.item.url_safe_public_key, {
+      ...this.item,
+      allowed_ips: this.item.allowed_ips.split(',')
+    })
+
+    console.log(answer)
+  }
+
+  private async deletePeer(): Promise<void> {
+    const answer = await deviceApi.deleteDevicePeer(this.$route.params.id, this.item.url_safe_public_key)
+
+    console.log(answer)
   }
 }
 </script>
@@ -141,6 +181,11 @@ export default class peerItem extends Vue {
   padding: 20px;
 
   span {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  &-input {
     margin-bottom: 20px;
   }
 }
@@ -156,5 +201,12 @@ export default class peerItem extends Vue {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.detail__info-buttons {
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
