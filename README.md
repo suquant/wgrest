@@ -27,6 +27,16 @@ Check all features [here](https://wgrest.forestvpn.com/swagger/)
 
 ## Install
 
+### On Debian / Ubuntu
+
+```shell
+curl -L https://github.com/suquant/wgrest/releases/latest/download/wgrest_amd64.deb -o wgrest_amd64.deb
+
+dpkg -i wgrest_amd64.deb
+```
+
+### Manual
+
 WGRest optionally comes with web ui and it is not included by default into binary. You need to do some extra actions to
 enable it.
 
@@ -65,11 +75,11 @@ GLOBAL OPTIONS:
 For Web UI support you need to:
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/latest/download/public.tar.gz -o wgrest-ui.tar.gz
+curl -L https://github.com/suquant/wgrest/releases/latest/download/webapp.tar.gz -o webapp.tar.gz
 
 sudo mkdir -p /var/lib/wgrest/public
 sudo chown `whoami` /var/lib/wgrest/public
-tar -xzvf wgrest-ui.tar.gz --strip-components 1 -C /var/lib/wgrest/public
+tar -xzvf webapp.tar.gz -C /var/lib/wgrest/public
 ```
 
 After run the server web ui will be available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)

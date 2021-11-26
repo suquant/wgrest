@@ -75,10 +75,10 @@ steps:
     commands:
       - export VERSION=${DRONE_TAG:-${DRONE_COMMIT:0:7}}
       - apk --no-cache add nfpm
-      - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/
-      - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/
+      - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/wgrest_amd64.deb
+      - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/wgrest_arm64.deb
       - cd dist
-      - tar -czvf public.tar.gz public
+      - tar -czvf webapp.tar.gz --strip-components=1 public
       - rm -rf public
     depends_on:
       - build wgrest server
