@@ -27,6 +27,9 @@ Check all features [here](https://wgrest.forestvpn.com/swagger/)
 
 ## Install
 
+WGRest optionally comes with web ui and it is not included by default into binary. You need to do some extra actions to
+enable it.
+
 ```shell
 curl -L https://github.com/suquant/wgrest/releases/download/1.0.0-alpha8/wgrest-linux-amd64 -o wgrest
 
@@ -59,18 +62,6 @@ GLOBAL OPTIONS:
    --help, -h                  show help (default: false)
 ```
 
-## Run WireGuard REST API Server
-
-```shell
-wgrest --static-auth-token "secret" --listen "127.0.0.1:8000"
-```
-
-```shell
-Output:
-
-⇨ http server started on 127.0.0.1:8000
-```
-
 For Web UI support you need to:
 
 ```shell
@@ -82,6 +73,18 @@ tar -xzvf wgrest-ui.tar.gz --strip-components 1 -C /var/lib/wgrest/public
 ```
 
 After run the server web ui will be available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+
+## Run WireGuard REST API Server
+
+```shell
+wgrest --static-auth-token "secret" --listen "127.0.0.1:8000"
+```
+
+```shell
+Output:
+
+⇨ http server started on 127.0.0.1:8000
+```
 
 ## Update **wg0** device
 

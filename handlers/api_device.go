@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"encoding/base64"
 	"github.com/labstack/echo/v4"
 	"github.com/skip2/go-qrcode"
 	"github.com/suquant/wgrest/models"
@@ -178,11 +177,11 @@ func (c *WireGuardContainer) DeleteDevicePeer(ctx echo.Context) error {
 		})
 	}
 
-	pubKey, err := wgtypes.ParseKey(urlSafePubKey)
+	pubKey, err := parseUrlSafeKey(urlSafePubKey)
 	if err != nil {
-		ctx.Logger().Errorf("failed to parse wireguard public key: %s", err)
+		ctx.Logger().Errorf("failed to parse pub key: %s", err)
 		return ctx.JSON(http.StatusBadRequest, models.Error{
-			Code:    "wireguard_key_error",
+			Code:    "request_params_error",
 			Message: err.Error(),
 		})
 	}
@@ -271,7 +270,7 @@ func (c *WireGuardContainer) GetDevicePeer(ctx echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
+	pubKey, err := parseUrlSafeKey(urlSafePubKey)
 	if err != nil {
 		ctx.Logger().Errorf("failed to parse pub key: %s", err)
 		return ctx.JSON(http.StatusBadRequest, models.Error{
@@ -279,17 +278,6 @@ func (c *WireGuardContainer) GetDevicePeer(ctx echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-
-	if len(parsedPubKey) != wgtypes.KeyLen {
-		ctx.Logger().Errorf("wrong pub key: key length => %v", len(parsedPubKey))
-		return ctx.JSON(http.StatusBadRequest, models.Error{
-			Code:    "request_params_error",
-			Message: err.Error(),
-		})
-	}
-
-	var pubKey wgtypes.Key
-	copy(pubKey[:32], parsedPubKey[:])
 
 	client, err := wgctrl.New()
 	if err != nil {
@@ -520,7 +508,7 @@ func (c *WireGuardContainer) UpdateDevicePeer(ctx echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
+	pubKey, err := parseUrlSafeKey(urlSafePubKey)
 	if err != nil {
 		ctx.Logger().Errorf("failed to parse pub key: %s", err)
 		return ctx.JSON(http.StatusBadRequest, models.Error{
@@ -528,17 +516,6 @@ func (c *WireGuardContainer) UpdateDevicePeer(ctx echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-
-	if len(parsedPubKey) != wgtypes.KeyLen {
-		ctx.Logger().Errorf("wrong pub key: key length => %v", len(parsedPubKey))
-		return ctx.JSON(http.StatusBadRequest, models.Error{
-			Code:    "request_params_error",
-			Message: err.Error(),
-		})
-	}
-
-	var pubKey wgtypes.Key
-	copy(pubKey[:32], parsedPubKey[:])
 
 	var request models.PeerCreateOrUpdateRequest
 	if err := ctx.Bind(&request); err != nil {
@@ -644,17 +621,10 @@ func (c *WireGuardContainer) getDevicePeerQuickConfig(ctx echo.Context) (io.Read
 		return nil, err
 	}
 
-	parsedPubKey, err := base64.URLEncoding.DecodeString(urlSafePubKey)
+	pubKey, err := parseUrlSafeKey(urlSafePubKey)
 	if err != nil {
 		return nil, err
 	}
-
-	if len(parsedPubKey) != wgtypes.KeyLen {
-		return nil, err
-	}
-
-	var pubKey wgtypes.Key
-	copy(pubKey[:32], parsedPubKey[:])
 
 	peerOptions, err := c.storage.ReadPeerOptions(pubKey)
 	if err != nil {
