@@ -1,5 +1,23 @@
 <template>
   <div class="peer__container">
+    <div class="peer__headers">
+      <div class="peer__search">
+        <el-input placeholder="Search" v-model="queries.q" />
+        <el-button type="primary" @click="getPeerList">Search</el-button>
+      </div>
+      <el-select
+        v-model="queries.sort"
+        placeholder="Sorting"
+        @change="getPeerList"
+      >
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label | sortItem"
+          :value="item.value">
+        </el-option>
+      </el-select>
+    </div>
     <div class="peer__list">
       <peer-item
         v-for="peer in peersList"
@@ -29,6 +47,12 @@ import { emitter } from '@/utils/emmiter'
   name: 'Peer',
   components: {
     peerItem
+  },
+
+  filters: {
+    sortItem(value: string) {
+      return value.replace('-', '↑ ').replace('+', '↓ ')
+    }
   }
 })
 export default class extends Vue {
@@ -44,25 +68,70 @@ export default class extends Vue {
     sort: ''
   }
 
+  private options = [
+    {
+      value: 'pub_key',
+      label: 'Public key'
+    },
+    {
+      value: 'receive_bytes',
+      label: '+Receive bytes'
+    },
+    {
+      value: '-receive_bytes',
+      label: '-Receive bytes'
+    },
+    {
+      value: 'transmit_bytes',
+      label: '+Transmit bytes'
+    },
+    {
+      value: '-transmit_bytes',
+      label: '-Transmit bytes'
+    },
+    {
+      value: 'total_bytes',
+      label: '+Total bytes'
+    },
+    {
+      value: '-total_bytes',
+      label: '-Total bytes'
+    },
+    {
+      value: 'last_handshake_time',
+      label: '+Last handshake time'
+    },
+    {
+      value: '-last_handshake_time',
+      label: '-Last handshake time'
+    }
+  ]
+
   public async getPeerList(): Promise<void> {
     // eslint-disable-next-line camelcase
     const { name, per_page, page, q, sort } = this.queries
     const { data } = await deviceApi.listDevicePeers(name, per_page, page, q, sort)
 
-    const flatten = (a: any) => [].concat.apply([], a)
-    const noDuplicateProps = (a: any, b: any) => a.url_safe_public_key === b.url_safe_public_key
+    // if (!data.length && this.queries.q.length) {
+    //   this.peersList = []
+    // }
+    //
+    // const flatten = (a: any) => [].concat.apply([], a)
+    // const noDuplicateProps = (a: any, b: any) => a.url_safe_public_key === b.url_safe_public_key
+    //
+    // const combineAndDeDup = (...arrs: any[]) => {
+    //   return flatten(arrs).reduce((acc, item) => {
+    //     const uniqueItem = acc.findIndex(i => noDuplicateProps(i, item)) === -1
+    //
+    //     if (uniqueItem) return acc.concat([item])
+    //
+    //     return acc
+    //   }, [])
+    // }
 
-    const combineAndDeDup = (...arrs: any[]) => {
-      return flatten(arrs).reduce((acc, item) => {
-        const uniqueItem = acc.findIndex(i => noDuplicateProps(i, item)) === -1
+    // this.peersList = combineAndDeDup(this.peersList, data)
 
-        if (uniqueItem) return acc.concat([item])
-
-        return acc
-      }, [])
-    }
-
-    this.peersList = combineAndDeDup(this.peersList, data)
+    this.peersList = data
   }
 
   private deletePeer(key: string): void {
@@ -80,7 +149,7 @@ export default class extends Vue {
     this.getPeerList()
     emitter.on('updatePeer', this.getPeerList)
 
-    this.updatePeersTimer = setInterval(this.getPeerList, 5000)
+    this.updatePeersTimer = setInterval(this.getPeerList, 10000)
   }
 
   beforeDestroy() {
@@ -95,6 +164,19 @@ export default class extends Vue {
   flex-direction: column;
   align-items: center;
 }
+
+.peer__headers {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.peer__search {
+  display: flex;
+  align-items: center;
+  margin-right: 50px;
+}
+
 .peer__list {
   padding-top: 30px;
   display: flex;

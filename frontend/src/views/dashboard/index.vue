@@ -34,7 +34,7 @@ export default class extends Vue {
 
   created(): void {
     emitter.on('updateDevice', () => DevicesModule.getDevicesList({ page: this.currentPage }))
-    this.updateDevicesTimer = setInterval(() => DevicesModule.getDevicesList({ page: this.currentPage }), 5000)
+    this.updateDevicesTimer = setInterval(() => DevicesModule.getDevicesList({ page: this.currentPage }), 10000)
   }
 
   beforeDestroy() {
