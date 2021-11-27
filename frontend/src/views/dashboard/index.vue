@@ -17,11 +17,7 @@ import { emitter } from '@/utils/emmiter'
 
 @Component({
   name: 'Dashboard',
-  components: { InterfaceItem },
-
-  mounted() {
-    DevicesModule.getDevicesList()
-  }
+  components: { InterfaceItem }
 })
 export default class extends Vue {
   private updateDevicesTimer: any
@@ -30,9 +26,15 @@ export default class extends Vue {
     return DevicesModule.devices
   }
 
-  created() {
-    emitter.on('updateDevice', DevicesModule.getDevicesList)
-    this.updateDevicesTimer = setInterval(DevicesModule.getDevicesList, 5000)
+  private currentPage = 0
+
+  mounted() {
+    DevicesModule.getDevicesList({ page: this.currentPage })
+  }
+
+  created(): void {
+    emitter.on('updateDevice', () => DevicesModule.getDevicesList({ page: this.currentPage }))
+    this.updateDevicesTimer = setInterval(() => DevicesModule.getDevicesList({ page: this.currentPage }), 5000)
   }
 
   beforeDestroy() {

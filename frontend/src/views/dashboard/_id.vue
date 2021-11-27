@@ -1,12 +1,20 @@
 <template>
-<div class="peer__list">
-  <peer-item
-    v-for="peer in peersList"
-    :key="peer.public_key"
-    :item="peer"
-    @delete="deletePeer"
-  ></peer-item>
-</div>
+  <div class="peer__container">
+    <div class="peer__list">
+      <peer-item
+        v-for="peer in peersList"
+        :key="peer.public_key"
+        :item="peer"
+        @delete="deletePeer"
+      ></peer-item>
+    </div>
+<!--    <el-button-->
+<!--      type="primary"-->
+<!--      @click="loadMorePeers"-->
+<!--    >-->
+<!--      Load More-->
+<!--    </el-button>-->
+  </div>
 </template>
 
 <script lang="ts">
@@ -28,16 +36,44 @@ export default class extends Vue {
 
   private updatePeersTimer: any
 
-  public async getPeerList(): Promise<void> {
-    const { data } = await deviceApi.listDevicePeers(this.$route.params.id)
+  private queries = {
+    name: this.$route.params.id,
+    per_page: 100,
+    page: 0,
+    q: '',
+    sort: ''
+  }
 
-    this.peersList = data
+  public async getPeerList(): Promise<void> {
+    // eslint-disable-next-line camelcase
+    const { name, per_page, page, q, sort } = this.queries
+    const { data } = await deviceApi.listDevicePeers(name, per_page, page, q, sort)
+
+    const flatten = (a: any) => [].concat.apply([], a)
+    const noDuplicateProps = (a: any, b: any) => a.url_safe_public_key === b.url_safe_public_key
+
+    const combineAndDeDup = (...arrs: any[]) => {
+      return flatten(arrs).reduce((acc, item) => {
+        const uniqueItem = acc.findIndex(i => noDuplicateProps(i, item)) === -1
+
+        if (uniqueItem) return acc.concat([item])
+
+        return acc
+      }, [])
+    }
+
+    this.peersList = combineAndDeDup(this.peersList, data)
   }
 
   private deletePeer(key: string): void {
     const index = this.peersList.findIndex(item => item.public_key === key)
 
     this.peersList.splice(index, 1)
+  }
+
+  private loadMorePeers(): void {
+    this.queries.page++
+    this.getPeerList()
   }
 
   created() {
@@ -54,12 +90,16 @@ export default class extends Vue {
 </script>
 
 <style scoped>
+.peer__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .peer__list {
   padding-top: 30px;
   display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
-
 }
 </style>
