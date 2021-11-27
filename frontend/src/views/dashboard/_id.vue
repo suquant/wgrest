@@ -4,6 +4,7 @@
     v-for="peer in peersList"
     :key="peer.public_key"
     :item="peer"
+    @delete="deletePeer"
   ></peer-item>
 </div>
 </template>
@@ -29,6 +30,12 @@ export default class extends Vue {
     const { data } = await deviceApi.listDevicePeers(this.$route.params.id)
 
     this.peersList = data
+  }
+
+  private deletePeer(key: string): void {
+    const index = this.peersList.findIndex(item => item.public_key === key)
+
+    this.peersList.splice(index, 1)
   }
 
   created() {
