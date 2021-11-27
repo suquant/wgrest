@@ -26,6 +26,8 @@ import { emitter } from '@/utils/emmiter'
 export default class extends Vue {
   private peersList: Peer[] = []
 
+  private updatePeersTimer: any
+
   public async getPeerList(): Promise<void> {
     const { data } = await deviceApi.listDevicePeers(this.$route.params.id)
 
@@ -41,6 +43,12 @@ export default class extends Vue {
   created() {
     this.getPeerList()
     emitter.on('updatePeer', this.getPeerList)
+
+    this.updatePeersTimer = setInterval(this.getPeerList, 5000)
+  }
+
+  beforeDestroy() {
+    clearInterval(this.updatePeersTimer)
   }
 }
 </script>

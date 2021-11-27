@@ -13,6 +13,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import { DevicesModule } from '@/store/modules/devices'
 import InterfaceItem from '@/views/dashboard/InterfaceItem.vue'
 import { Device } from 'wgrest/dist/models'
+import { emitter } from '@/utils/emmiter'
 
 @Component({
   name: 'Dashboard',
@@ -23,8 +24,19 @@ import { Device } from 'wgrest/dist/models'
   }
 })
 export default class extends Vue {
+  private updateDevicesTimer: any
+
   get devices(): Device[] {
     return DevicesModule.devices
+  }
+
+  created() {
+    emitter.on('updateDevice', DevicesModule.getDevicesList)
+    this.updateDevicesTimer = setInterval(DevicesModule.getDevicesList, 5000)
+  }
+
+  beforeDestroy() {
+    clearInterval(this.updateDevicesTimer)
   }
 }
 </script>

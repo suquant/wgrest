@@ -14,6 +14,14 @@
       <el-button
         class="navbar__button"
         type="primary"
+        icon="el-icon-refresh"
+        @click="updateList"
+      >
+        Update List
+      </el-button>
+      <el-button
+        class="navbar__button"
+        type="primary"
         icon="el-icon-plus"
         v-if="CurrentButton === NewAddButtonEnum.Device"
         @click="openModal('device')"
@@ -66,6 +74,8 @@ import { ModalModule } from '@/store/modules/modal'
 import Breadcrumb from '@/components/Breadcrumb/index.vue'
 import Hamburger from '@/components/Hamburger/index.vue'
 
+import { emitter } from '@/utils/emmiter'
+
 export enum NewAddButtonEnum {
   Device = 'Device',
   Peer = 'Peer'
@@ -114,6 +124,25 @@ export default class extends Vue {
   private async logout() {
     await UserModule.LogOut()
     this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+  }
+
+  private updateList(): void {
+    if (this.$route.name === 'Device') {
+      emitter.emit('updateDevice')
+
+      this.$message({
+        type: 'success',
+        message: 'Devices updated'
+      })
+    }
+    if (this.$route.name === 'Peer') {
+      emitter.emit('updatePeer')
+
+      this.$message({
+        type: 'success',
+        message: 'Peers updated'
+      })
+    }
   }
 }
 </script>
