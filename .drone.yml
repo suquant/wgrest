@@ -18,7 +18,7 @@ environment:
   NPM_CONFIG_CACHE: /cache/npm/cache
 
 steps:
-  - name: go deps
+  - name: deps
     image: golang:1.17.3-alpine3.14
     volumes:
       - name: cache
@@ -28,16 +28,7 @@ steps:
       - go get -t -d -v ./...
       - go build all
 
-  - name: node deps
-    image: node:14.18.1
-    volumes:
-      - name: cache
-        path: /cache
-    commands:
-      - cd frontend
-      - yarn install --non-interactive
-
-  - name: build wgrest server
+  - name: build
     image: golang:1.17.3-alpine3.14
     privileged: true
     volumes:
@@ -50,25 +41,10 @@ steps:
       - apk --no-cache add build-base
       - make build
     depends_on:
-      - go deps
+      - deps
 
-  - name: build wgrest ui
-    image: node:14.18.1
-    privileged: true
-    volumes:
-      - name: cache
-        path: /cache
-      - name: dist
-        path: /drone/src/dist
-    commands:
-      - cd frontend
-      - yarn build --dest ../dist/public
-    depends_on:
-      - node deps
-
-  - name: build
+  - name: build packages
     image: alpine:3.14.3
-    privileged: true
     volumes:
       - name: dist
         path: /drone/src/dist
@@ -77,11 +53,8 @@ steps:
       - apk --no-cache add nfpm
       - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/wgrest_amd64.deb
       - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/wgrest_arm64.deb
-      - tar -czvf dist/webapp.tar.gz -C dist/ public
-      - rm -rf dist/public
     depends_on:
-      - build wgrest server
-      - build wgrest ui
+      - build
 
   - name: github release
     image: plugins/github-release
@@ -96,7 +69,7 @@ steps:
         - md5
         - sha1
     depends_on:
-      - build
+      - build packages
     when:
       event:
         - tag
