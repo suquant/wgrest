@@ -17,8 +17,11 @@ class Devices extends VuexModule implements IDeviceState {
   }
 
   @Action
-  public async getDevicesList(): Promise<void> {
-    const { data } = await deviceApi.listDevices()
+  // eslint-disable-next-line camelcase
+  public async getDevicesList(query: { per_page?: number, page?: number }): Promise<void> {
+    // eslint-disable-next-line camelcase
+    const { per_page = 100, page = 0 } = query
+    const { data } = await deviceApi.listDevices(per_page, page)
     this.SET_DEVICES(data)
   }
 }

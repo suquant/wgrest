@@ -122,7 +122,16 @@ export default class peerItem extends Vue {
   private async deletePeer(): Promise<void> {
     const answer = await deviceApi.deleteDevicePeer(this.$route.params.id, this.item.url_safe_public_key)
 
-    console.log(answer)
+    if (answer.status.toString().startsWith('2')) {
+      this.$message({
+        type: 'success',
+        message: 'Peer deleted'
+      })
+    }
+
+    this.$emit('delete', this.item.public_key)
+
+    this.drawer = false
   }
 }
 </script>
