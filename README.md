@@ -29,10 +29,20 @@ Check all features [here](https://wgrest.forestvpn.com/swagger/)
 
 ### On Debian / Ubuntu
 
+#### WGRest server
+
 ```shell
 curl -L https://github.com/suquant/wgrest/releases/latest/download/wgrest_amd64.deb -o wgrest_amd64.deb
 
 dpkg -i wgrest_amd64.deb
+```
+
+#### WGRest Web App
+
+```shell
+curl -L https://github.com/suquant/wgrest-webapp/releases/latest/download/wgrest-webapp_amd64.deb -o wgrest-webapp_amd64.deb
+
+dpkg -i wgrest-webapp_amd64.deb
 ```
 
 ### Manual
@@ -75,7 +85,7 @@ GLOBAL OPTIONS:
 For Web UI support you need to:
 
 ```shell
-curl -L https://github.com/suquant/wgrest/releases/latest/download/webapp.tar.gz -o webapp.tar.gz
+curl -L https://github.com/suquant/wgrest-webapp/releases/latest/download/webapp.tar.gz -o webapp.tar.gz
 
 sudo mkdir -p /var/lib/wgrest/
 sudo chown `whoami` /var/lib/wgrest/
