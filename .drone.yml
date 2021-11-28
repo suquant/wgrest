@@ -77,9 +77,8 @@ steps:
       - apk --no-cache add nfpm
       - nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/wgrest_amd64.deb
       - nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/wgrest_arm64.deb
-      - cd dist
-      - tar -czvf webapp.tar.gz --strip-components=1 public
-      - rm -rf public
+      - tar -czvf dist/webapp.tar.gz -C dist/ public
+      - rm -rf dist/public
     depends_on:
       - build wgrest server
       - build wgrest ui
