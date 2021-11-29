@@ -546,7 +546,9 @@ func (c *WireGuardContainer) UpdateDevicePeer(ctx echo.Context) error {
 	}
 
 	peerConf := wgtypes.PeerConfig{
-		PublicKey: pubKey,
+		PublicKey:         pubKey,
+		ReplaceAllowedIPs: true,
+		UpdateOnly:        true,
 	}
 	err = request.Apply(&peerConf)
 	if err != nil {
