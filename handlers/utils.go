@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/suquant/wgrest/models"
 	"github.com/suquant/wgrest/utils"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"net/http"
@@ -43,4 +44,14 @@ func parseUrlSafeKey(encodedKey string) (wgtypes.Key, error) {
 	copy(key[:32], decodedKey[:])
 
 	return key, nil
+}
+
+func applyNetworks(device *models.Device) error {
+	addresses, err := utils.GetInterfaceIPs(device.Name)
+	if err != nil {
+		return err
+	}
+
+	device.Networks = addresses
+	return nil
 }

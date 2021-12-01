@@ -256,7 +256,16 @@ func (c *WireGuardContainer) GetDevice(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, models.NewDevice(device))
+	result := models.NewDevice(device)
+	if err := applyNetworks(&result); err != nil {
+		ctx.Logger().Errorf("failed to get networks for interface %s: %s", result.Name, err)
+		return ctx.JSON(http.StatusInternalServerError, models.Error{
+			Code:    "wireguard_device_error",
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, result)
 }
 
 // GetDevicePeer - Get device peer info
@@ -425,7 +434,16 @@ func (c *WireGuardContainer) ListDevices(ctx echo.Context) error {
 	filteredDevices := devices[beginIndex:endIndex]
 	result := make([]models.Device, len(filteredDevices))
 	for i, v := range filteredDevices {
-		result[i] = models.NewDevice(v)
+		device := models.NewDevice(v)
+		if err := applyNetworks(&device); err != nil {
+			ctx.Logger().Errorf("failed to get networks for interface %s: %s", device.Name, err)
+			return ctx.JSON(http.StatusInternalServerError, models.Error{
+				Code:    "wireguard_device_error",
+				Message: err.Error(),
+			})
+		}
+
+		result[i] = device
 	}
 
 	paginator.Write(ctx.Response())
@@ -494,7 +512,16 @@ func (c *WireGuardContainer) UpdateDevice(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, models.NewDevice(device))
+	result := models.NewDevice(device)
+	if err := applyNetworks(&result); err != nil {
+		ctx.Logger().Errorf("failed to get networks for interface %s: %s", result.Name, err)
+		return ctx.JSON(http.StatusInternalServerError, models.Error{
+			Code:    "wireguard_device_error",
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, result)
 }
 
 // UpdateDevicePeer - Update device's peer
