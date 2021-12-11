@@ -43,6 +43,35 @@ steps:
     depends_on:
       - deps
 
+  - name: test
+    image: golang:1.17.3-alpine3.14
+    volumes:
+      - name: cache
+        path: /cache
+      - name: dist
+        path: /drone/src/dist
+    commands:
+      - apk --no-cache add build-base
+      - go test -race -coverprofile=/cache/coverage.txt -covermode=atomic ./...
+    depends_on:
+      - deps
+
+  - name: coverage
+    image: alpine:3.14.3
+    volumes:
+      - name: cache
+        path: /cache
+    environment:
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
+    commands:
+      - apk --no-cache add bash curl
+      - curl -L https://codecov.io/bash -o /usr/local/bin/codecov
+      - chmod +x /usr/local/bin/codecov
+      - /usr/local/bin/codecov -f /cache/coverage.txt
+    depends_on:
+      - test
+
   - name: build packages
     image: alpine:3.14.3
     volumes:
