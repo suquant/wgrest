@@ -3,10 +3,11 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"github.com/suquant/wgrest/models"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"io"
 	"strings"
+
+	"github.com/suquant/wgrest/models"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type PeerQuickConfigOptions struct {

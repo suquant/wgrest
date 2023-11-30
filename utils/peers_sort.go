@@ -3,8 +3,9 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"sort"
+
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type sortPeerByPubKey []wgtypes.Peer
