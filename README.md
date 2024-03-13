@@ -107,6 +107,33 @@ Output:
 ⇨ http server started on 127.0.0.1:8000
 ```
 
+## Create **wg0** device
+
+```shell
+curl -v -g \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer secret" \
+    -X POST \
+    -d '{
+        "listen_port":51820, 
+        "private_key": "cLmxIyJx/PGWrQlevBGr2LQNOqmBGYbVfu4XcRO2SEo="
+    }' \
+    http://127.0.0.1:8000/v1/devices/
+```
+
+```json
+{
+  "name": "wg0",
+  "listen_port": 51820,
+  "public_key": "7TvriTzbaXdrsGXI8oMrMoNAWrVCXRUfiEvksOewLyg=",
+  "firewall_mark": 0,
+  "networks": null,
+  "peers_count": 7,
+  "total_receive_bytes": 0,
+  "total_transmit_bytes": 0
+}
+```
+
 ## Update **wg0** device
 
 ```shell

@@ -13,6 +13,7 @@ import (
 	"github.com/suquant/wgrest/models"
 	"github.com/suquant/wgrest/storage"
 	"github.com/suquant/wgrest/utils"
+	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
@@ -24,8 +25,85 @@ func (c *WireGuardContainer) CreateDevice(ctx echo.Context) error {
 	if err := ctx.Bind(&request); err != nil {
 		return err
 	}
+    attrs := netlink.NewLinkAttrs()
+    attrs.Name = *request.Name
+    wg := utils.WgLink{LinkAttrs: &attrs}
+    link, err := netlink.LinkByName(*request.Name)
+    if err != nil {
+        switch err.(type) {
+        case netlink.LinkNotFoundError:
+            if err := netlink.LinkAdd(&wg); err != nil {
+                ctx.Logger().Error(err)
+                return ctx.NoContent(http.StatusInternalServerError)
+            }
+        default:
+            return err         
+        }
+    } else {
+        wg.LinkAttrs = link.Attrs()
+    }
 
-	return ctx.NoContent(http.StatusNotImplemented)
+    client, err := wgctrl.New()
+	if err != nil {
+		ctx.Logger().Errorf("failed to init wireguard ipc: %s", err)
+		return ctx.JSON(http.StatusInternalServerError, models.Error{
+			Code:    "wireguard_client_error",
+			Message: err.Error(),
+		})
+	}
+	defer client.Close()
+
+    _, err = client.Device(wg.Name)
+    if err != nil {
+        if os.IsNotExist(err) {
+            return ctx.NoContent(http.StatusNotFound)
+        }
+        ctx.Logger().Errorf("failed to get wireguard device: %s", err)
+        return ctx.JSON(http.StatusInternalServerError, models.Error{
+            Code:    "wireguard_device_error",
+            Message: err.Error(),
+        })
+    }
+    // Device (interface) is actually created
+
+    p := int(*request.ListenPort)
+    fwm := int(*request.FirewallMark)
+    privateKey, err := wgtypes.ParseKey(*request.PrivateKey)
+    if err != nil {
+        ctx.Logger().Errorf("failed to parse private key: %s", err)
+        return ctx.JSON(http.StatusInternalServerError, models.Error{
+            Code:    "wireguard_config_error",
+            Message: err.Error(),
+        })
+    }
+
+    wgConfig := wgtypes.Config{
+        ListenPort: &p,
+        FirewallMark: &fwm,
+        PrivateKey: &privateKey,
+    }
+
+    if err := client.ConfigureDevice(wg.Name, wgConfig); err != nil {
+        ctx.Logger().Errorf("failed to configure wireguard device: %s", err)
+        return ctx.JSON(http.StatusInternalServerError, models.Error{
+            Code:    "wireguard_error",
+            Message: err.Error(),
+        })
+    }
+
+    dev, err := client.Device(wg.Name)
+    if err != nil {
+        if os.IsNotExist(err) {
+            return ctx.NoContent(http.StatusNotFound)
+        }
+        ctx.Logger().Errorf("failed to get wireguard device: %s", err)
+        return ctx.JSON(http.StatusInternalServerError, models.Error{
+            Code:    "wireguard_device_error",
+            Message: err.Error(),
+        })
+    }
+
+    return ctx.JSON(http.StatusCreated, models.NewDevice(dev))
 }
 
 // CreateDevicePeer - Create new device peer
