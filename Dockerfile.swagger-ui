@@ -1,4 +1,4 @@
-FROM swaggerapi/swagger-ui:v4.1.0
+FROM swaggerapi/swagger-ui:v5.27.0
 LABEL maintainer="ForestVPN.com <support@forestvpn.com>"
 
 COPY openapi-spec.yaml /var/www/api.spec.yaml
