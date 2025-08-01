@@ -1,6 +1,6 @@
 WGRest
 ---
-[![Build Status](https://drone.forestvpn.com/api/badges/suquant/wgrest/status.svg)](https://drone.forestvpn.com/suquant/wgrest)
+[![Build Status](https://drone.fvpn.uk/api/badges/suquant/wgrest/status.svg)](https://drone.fvpn.uk/suquant/wgrest)
 [![codecov](https://codecov.io/gh/suquant/wgrest/branch/master/graph/badge.svg?token=NM179YJFEJ)](https://codecov.io/gh/suquant/wgrest)
 
 WGRest is a WireGuard REST API server. It operates wireguard through IPC and doesn't require any dependencies. It aims
