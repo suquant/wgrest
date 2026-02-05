@@ -1,5 +1,5 @@
 BUILDDIR ?= dist
-OSS ?= linux darwin freebsd windows
+OSS ?= linux darwin windows
 ARCHS ?= amd64 arm64
 VERSION ?= $(shell git describe --tags `git rev-list -1 HEAD`)
 

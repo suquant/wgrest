@@ -51,6 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     strategy:
+      fail-fast: false
       matrix:
         include:
           - goos: linux
@@ -61,7 +62,12 @@ jobs:
             goarch: amd64
           - goos: darwin
             goarch: arm64
-          # FreeBSD disabled: wgctrl has compatibility issues
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+          - goos: windows
+            goarch: arm64
+            ext: .exe
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,6 +78,11 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
 
+      - name: Install UPX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx
+
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
@@ -80,13 +91,22 @@ jobs:
         run: |
           VERSION=${GITHUB_REF_NAME:-${GITHUB_SHA::7}}
           mkdir -p dist
-          go build -ldflags="-s -w -X main.version=${VERSION}" -o dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/wgrest-server
+          go build \
+            -ldflags="-s -w -X main.version=${VERSION}" \
+            -trimpath \
+            -o dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} \
+            ./cmd/wgrest-server
+
+      - name: Compress with UPX (Linux/Windows amd64 only)
+        if: matrix.goarch == 'amd64' && matrix.goos != 'darwin'
+        run: |
+          upx --best --lzma dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: wgrest-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
 
   package:
     name: Package
@@ -127,7 +147,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: packages
-          path: dist/*.deb
+          path: |
+            dist/*.deb
+            dist/*.rpm
 
   release:
     name: Release
@@ -145,10 +167,18 @@ jobs:
       - name: Prepare release files
         run: |
           mkdir -p release
-          cp artifacts/wgrest-*/* release/ 2>/dev/null || true
-          cp artifacts/packages/* release/ 2>/dev/null || true
+          # Copy all binaries
+          for dir in artifacts/wgrest-*/; do
+            cp "$dir"/* release/ 2>/dev/null || true
+          done
+          # Copy packages
+          cp artifacts/packages/*.deb release/ 2>/dev/null || true
+          cp artifacts/packages/*.rpm release/ 2>/dev/null || true
+          # Generate checksums
           cd release
-          sha256sum * > SHA256SUMS.txt
+          md5sum * > md5sum.txt
+          sha1sum * > sha1sum.txt
+          sha256sum * > sha256sum.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -156,4 +186,4 @@ jobs:
           files: release/*
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(github.ref, '-') }}
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
