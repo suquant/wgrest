@@ -28,7 +28,9 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test -coverprofile=coverage.txt -covermode=atomic ./...
+        run: go test -coverprofile=coverage.txt ./...
+        env:
+          GOEXPERIMENT: nocoverageredesign
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
