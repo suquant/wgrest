@@ -97,10 +97,16 @@ jobs:
             -o dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} \
             ./cmd/wgrest-server
 
-      - name: Compress with UPX (Linux/Windows amd64 only)
-        if: matrix.goarch == 'amd64' && matrix.goos != 'darwin'
+      - name: Compress with UPX
+        if: matrix.goos != 'darwin'
         run: |
-          upx --best --lzma dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} || true
+          # UPX doesn't support macOS Mach-O binaries
+          # For arm64, use --best without --lzma (better compatibility)
+          if [ "${{ matrix.goarch }}" = "arm64" ]; then
+            upx --best dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} || true
+          else
+            upx --best --lzma dist/wgrest-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} || true
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
