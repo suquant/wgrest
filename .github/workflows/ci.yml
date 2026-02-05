@@ -61,8 +61,7 @@ jobs:
             goarch: amd64
           - goos: darwin
             goarch: arm64
-          - goos: freebsd
-            goarch: amd64
+          # FreeBSD disabled: wgctrl has compatibility issues
     steps:
       - name: Checkout
         uses: actions/checkout@v4
