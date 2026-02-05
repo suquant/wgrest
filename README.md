@@ -1,6 +1,6 @@
 # WGRest
 
-[![Build Status](https://drone.forestvpn.com/api/badges/suquant/wgrest/status.svg)](https://drone.forestvpn.com/suquant/wgrest)
+[![Build Status](https://github.com/suquant/wgrest/actions/workflows/ci.yml/badge.svg)](https://github.com/suquant/wgrest/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/suquant/wgrest/branch/master/graph/badge.svg?token=NM179YJFEJ)](https://codecov.io/gh/suquant/wgrest)
 
 WGRest is a REST API server for WireGuard. It uses wg-quick style configuration files for persistent storage, providing full compatibility with standard WireGuard tooling.
