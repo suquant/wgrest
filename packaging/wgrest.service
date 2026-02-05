@@ -4,12 +4,16 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
-User=wgrest
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
-EnvironmentFile=/etc/default/wgrest
+# wgrest must run as root for wg-quick up/down commands
+User=root
+Group=root
 ExecStart=/usr/local/bin/wgrest --conf /etc/wgrest/wgrest.conf
 Restart=always
 RestartSec=1
+# Security hardening (where possible while running as root)
+NoNewPrivileges=no
+ProtectSystem=strict
+ReadWritePaths=/etc/wireguard /usr/local/etc/wireguard /var/lib/wgrest
 
 [Install]
 WantedBy=multi-user.target

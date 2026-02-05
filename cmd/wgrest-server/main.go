@@ -1,25 +1,59 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/suquant/wgrest/handlers"
-	"github.com/suquant/wgrest/storage"
-	"github.com/suquant/wgrest/utils"
+	"log"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 	"golang.org/x/crypto/acme/autocert"
-	"log"
-	"net/http"
-	"os"
-	"path"
+
+	"github.com/suquant/wgrest/api/docs"
+	"github.com/suquant/wgrest/internal/infrastructure/dump"
+	"github.com/suquant/wgrest/internal/infrastructure/wgquick"
+	"github.com/suquant/wgrest/internal/infrastructure/wireguard"
+	httpInterface "github.com/suquant/wgrest/internal/interface/http"
+	"github.com/suquant/wgrest/internal/interface/http/handler"
+	"github.com/suquant/wgrest/internal/usecase"
 )
 
 var (
 	appVersion string // Populated during build time
 )
 
+// defaultConfigDirs returns the platform-specific default WireGuard config directories.
+// Matches wg-quick search order.
+func defaultConfigDirs() []string {
+	switch runtime.GOOS {
+	case "darwin", "freebsd":
+		return []string{
+			"/etc/wireguard",
+			"/usr/local/etc/wireguard",
+			"/opt/homebrew/etc/wireguard",
+		}
+	default:
+		return []string{"/etc/wireguard"}
+	}
+}
+
+// @title WGRest API
+// @version 1.0
+// @description REST API for managing WireGuard interfaces and peers
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+// @host localhost:8000
+// @basePath /v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @schemes http https
 func main() {
 	flags := []cli.Flag{
 		&cli.StringFlag{
@@ -39,53 +73,41 @@ func main() {
 			Usage:   "Listen address",
 			EnvVars: []string{"WGREST_LISTEN"},
 		}),
+		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
+			Name:    "config-dir",
+			Value:   cli.NewStringSlice(defaultConfigDirs()...),
+			Usage:   "WireGuard config directories (wg-quick style, can specify multiple)",
+			EnvVars: []string{"WGREST_CONFIG_DIR"},
+		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "data-dir",
-			Value:   "/var/lib/wgrest",
-			Usage:   "Data dir",
-			EnvVars: []string{"WGREST_DATA_DIR"},
+			Name:    "certs-dir",
+			Value:   "/var/lib/wgrest/certs",
+			Usage:   "ACME TLS certificates cache directory",
+			EnvVars: []string{"WGREST_CERTS_DIR"},
+		}),
+		altsrc.NewDurationFlag(&cli.DurationFlag{
+			Name:    "dump-interval",
+			Value:   10 * time.Minute,
+			Usage:   "Config dump interval",
+			EnvVars: []string{"WGREST_DUMP_INTERVAL"},
 		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
 			Name:    "static-auth-token",
 			Value:   "",
-			Usage:   "It is used for bearer token authorization",
+			Usage:   "Bearer token for authorization",
 			EnvVars: []string{"WGREST_STATIC_AUTH_TOKEN"},
 		}),
 		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
 			Name:    "tls-domain",
 			Value:   cli.NewStringSlice(),
-			Usage:   "TLS Domains",
+			Usage:   "TLS Domains for ACME (Let's Encrypt)",
 			EnvVars: []string{"WGREST_TLS_DOMAIN"},
-		}),
-		altsrc.NewBoolFlag(&cli.BoolFlag{
-			Name:    "demo",
-			Value:   false,
-			Usage:   "Demo mode",
-			EnvVars: []string{"WGREST_DEMO"},
-		}),
-		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
-			Name:    "device-allowed-ips",
-			Value:   cli.NewStringSlice("0.0.0.0/0", "::0/0"),
-			Usage:   "Default device allowed ips. You can overwrite it through api",
-			EnvVars: []string{"WGREST_DEVICE_ALLOWED_IPS"},
-		}),
-		altsrc.NewStringSliceFlag(&cli.StringSliceFlag{
-			Name:    "device-dns-servers",
-			Value:   cli.NewStringSlice("8.8.8.8", "1.1.1.1", "2001:4860:4860::8888", "2606:4700:4700::1111"),
-			Usage:   "Default device DNS servers. You can overwrite it through api",
-			EnvVars: []string{"WGREST_DEVICE_DNS_SERVERS"},
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "device-host",
-			Value:   "",
-			Usage:   "Default device host. You can overwrite it through api",
-			EnvVars: []string{"WGREST_DEVICE_HOST"},
 		}),
 	}
 
 	app := &cli.App{
 		Name:   "wgrest",
-		Usage:  "wgrest - rest api for wireguard",
+		Usage:  "wgrest - REST API for WireGuard",
 		Flags:  flags,
 		Before: altsrc.InitInputSourceWithContext(flags, altsrc.NewTomlSourceFromFlagFunc("conf")),
 		Action: func(c *cli.Context) error {
@@ -94,131 +116,97 @@ func main() {
 				return nil
 			}
 
-			e := echo.New()
-			e.HideBanner = true
+			// Create context for graceful shutdown
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-			// Basic middleware
-			e.Use(middleware.Logger())
-			e.Use(middleware.Recover())
-			e.Pre(middleware.Rewrite(map[string]string{
-				"^/devices":   "/",
-				"^/devices/*": "/",
-			}))
-
-			e.GET("/version", getVersionHandler)
-
-			dataDir := c.String("data-dir")
-			e.File("/", path.Join(dataDir, "public", "index.html"))
-			e.Static("/", path.Join(dataDir, "public"))
-
-			cacheDir := path.Join(dataDir, ".cache")
-			tlsDomains := c.StringSlice("tls-domain")
-			if len(tlsDomains) > 0 {
-				e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(tlsDomains...)
-				e.AutoTLSManager.Cache = autocert.DirCache(cacheDir)
-			}
-
-			v1 := e.Group("/v1")
-			v1.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-				Skipper:          middleware.DefaultSkipper,
-				AllowOrigins:     []string{"*"},
-				AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-				AllowHeaders:     []string{"Content-Type", "Accept", "Accept-Language", "Link", "Authorization"},
-				AllowCredentials: true,
-			}))
-
-			staticAuthToken := c.String("static-auth-token")
-			if staticAuthToken != "" {
-				v1.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-					return key == staticAuthToken, nil
-				}))
-			}
-
-			wgStorage, err := storage.NewFileStorage(dataDir)
-			if err != nil {
-				return err
-			}
-
-			defaultDeviceHost := c.String("device-host")
-			if defaultDeviceHost == "" {
-				defaultDeviceHost, err = utils.GetExternalIP()
-				if err != nil {
-					log.Printf("failed to identify external ip: %s", err.Error())
-				}
-			}
-
-			defaultDeviceOptions := storage.StoreDeviceOptions{
-				AllowedIPs: c.StringSlice("device-allowed-ips"),
-				DNSServers: c.StringSlice("device-dns-servers"),
-				Host:       defaultDeviceHost,
-			}
-
-			wc, err := handlers.NewWireGuardContainer(handlers.WireGuardContainerOptions{
-				Storage:              wgStorage,
-				DefaultDeviceOptions: defaultDeviceOptions,
+			// Initialize Fiber
+			fiberApp := fiber.New(fiber.Config{
+				DisableStartupMessage: false,
+				AppName:               "wgrest",
 			})
+
+			// Initialize WireGuard client
+			wgClient, err := wireguard.NewClient()
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to create wireguard client: %w", err)
+			}
+			defer wgClient.Close()
+
+			// Initialize wg-quick config service
+			configDirs := c.StringSlice("config-dir")
+			wgquickSvc, err := wgquick.NewService(configDirs)
+			if err != nil {
+				return fmt.Errorf("failed to create wgquick service: %w", err)
 			}
 
-			// CreateDevice - Create new device
-			v1.POST("/devices/", wc.CreateDevice)
+			// Initialize dump service
+			dumpInterval := c.Duration("dump-interval")
+			dumpService := dump.NewService(dumpInterval, wgClient, wgquickSvc)
 
-			// CreateDevicePeer - Create new device peer
-			v1.POST("/devices/:name/peers/", wc.CreateDevicePeer)
+			// Start dump service in background
+			go dumpService.Start(ctx)
+			log.Printf("Config dump service started (interval: %s, dirs: %v)", dumpInterval, configDirs)
 
-			// DeleteDevice - Delete Device
-			v1.DELETE("/devices/:name/", wc.DeleteDevice)
+			// Initialize use cases
+			deviceUC := usecase.NewDeviceUseCase(wgClient, wgquickSvc)
+			peerUC := usecase.NewPeerUseCase(wgClient, wgquickSvc)
 
-			// DeleteDevicePeer - Delete device's peer
-			v1.DELETE("/devices/:name/peers/:urlSafePubKey/", wc.DeleteDevicePeer)
+			// Initialize handlers
+			deviceHandler := handler.NewDeviceHandler(deviceUC)
+			peerHandler := handler.NewPeerHandler(peerUC)
 
-			// GetDevice - Get device info
-			v1.GET("/devices/:name/", wc.GetDevice)
+			// Setup routes
+			httpInterface.SetupRouter(fiberApp, httpInterface.RouterConfig{
+				DeviceHandler: deviceHandler,
+				PeerHandler:   peerHandler,
+				AuthToken:     c.String("static-auth-token"),
+				Version:       appVersion,
+				OpenAPISpec:   docs.OpenAPISpec,
+			})
 
-			// GetDevicePeer - Get device peer info
-			v1.GET("/devices/:name/peers/:urlSafePubKey/", wc.GetDevicePeer)
+			// Handle graceful shutdown
+			go func() {
+				sigCh := make(chan os.Signal, 1)
+				signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+				<-sigCh
 
-			// ListDevicePeers - Peers list
-			v1.GET("/devices/:name/peers/", wc.ListDevicePeers)
+				log.Println("Received shutdown signal...")
+				cancel() // Triggers final config dump
 
-			// ListDevices - Devices list
-			v1.GET("/devices/", wc.ListDevices)
+				time.Sleep(500 * time.Millisecond)
 
-			// UpdateDevice - Update device
-			v1.PATCH("/devices/:name/", wc.UpdateDevice)
+				if err := fiberApp.Shutdown(); err != nil {
+					log.Printf("Error shutting down server: %v", err)
+				}
+			}()
 
-			// UpdateDevicePeer - Update device's peer
-			v1.PATCH("/devices/:name/peers/:urlSafePubKey/", wc.UpdateDevicePeer)
-
-			// GetDevicePeerQuickConfig - Get device peer quick config
-			v1.GET("/devices/:name/peers/:urlSafePubKey/quick.conf", wc.GetDevicePeerQuickConfig)
-
-			// GetDevicePeerQuickConfigQRCodePNG - Get device peer quick config QR code
-			v1.GET("/devices/:name/peers/:urlSafePubKey/quick.conf.png", wc.GetDevicePeerQuickConfigQRCodePNG)
-
-			// GetDeviceOptions - Get device options
-			v1.GET("/devices/:name/options/", wc.GetDeviceOptions)
-
-			// UpdateDeviceOptions - Update device's options
-			v1.PATCH("/devices/:name/options/", wc.UpdateDeviceOptions)
-
-			listen := c.String("listen")
 			// Start server
+			listen := c.String("listen")
+			tlsDomains := c.StringSlice("tls-domain")
+
 			if len(tlsDomains) > 0 {
-				return e.StartAutoTLS(listen)
-			} else {
-				return e.Start(listen)
+				// ACME TLS with Let's Encrypt
+				certsDir := c.String("certs-dir")
+				certManager := &autocert.Manager{
+					Prompt:     autocert.AcceptTOS,
+					HostPolicy: autocert.HostWhitelist(tlsDomains...),
+					Cache:      autocert.DirCache(certsDir),
+				}
+
+				// Create TLS listener with autocert
+				tlsListener := certManager.Listener()
+
+				log.Printf("Starting wgrest server with ACME TLS for domains: %v", tlsDomains)
+				return fiberApp.Listener(tlsListener)
 			}
+
+			log.Printf("Starting wgrest server on %s", listen)
+			return fiberApp.Listen(listen)
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func getVersionHandler(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, appVersion)
 }

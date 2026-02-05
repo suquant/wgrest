@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -eu
 
-adduser --system wgrest --home /var/lib/wgrest
+# Create data directory for certs cache
+mkdir -p /var/lib/wgrest
+chmod 700 /var/lib/wgrest
 
-systemctl enable "/etc/systemd/system/wgrest.service"
+# Enable and start service
+systemctl daemon-reload
+systemctl enable wgrest.service

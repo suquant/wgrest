@@ -3,8 +3,10 @@ arch: "arm64"
 platform: "linux"
 version: "${VERSION}"
 maintainer: ForestVPN.com
+description: REST API for WireGuard
 depends:
   - wireguard
+  - wireguard-tools
 contents:
   - src: dist/wgrest-linux-arm64
     dst: /usr/local/bin/wgrest

@@ -1,0 +1,899 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API for managing WireGuard interfaces and peers",
+        "title": "WGRest API",
+        "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/v1",
+    "paths": {
+        "/devices/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "List all WireGuard devices",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Device"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Create a new WireGuard device",
+                "parameters": [
+                    {
+                        "description": "Device creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DeviceCreateOrUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Device"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{name}/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Get a specific device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Device"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Delete a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Update a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Device update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DeviceCreateOrUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Device"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{name}/down/": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Bring interface down (wg-quick down)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{name}/peers/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peers"
+                ],
+                "summary": "List all peers for a device",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 100,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by allowed IPs",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "pub_key",
+                            "-pub_key",
+                            "receive_bytes",
+                            "-receive_bytes",
+                            "transmit_bytes",
+                            "-transmit_bytes",
+                            "total_bytes",
+                            "-total_bytes",
+                            "last_handshake_time",
+                            "-last_handshake_time"
+                        ],
+                        "type": "string",
+                        "description": "Sort field (prefix with - for desc)",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Peer"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peers"
+                ],
+                "summary": "Create a new peer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Peer creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PeerCreateOrUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Peer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{name}/peers/{urlSafePubKey}/": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peers"
+                ],
+                "summary": "Get a specific peer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "URL-safe base64 encoded public key",
+                        "name": "urlSafePubKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Peer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "Peers"
+                ],
+                "summary": "Delete a peer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "URL-safe base64 encoded public key",
+                        "name": "urlSafePubKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Peer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peers"
+                ],
+                "summary": "Update a peer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "URL-safe base64 encoded public key",
+                        "name": "urlSafePubKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Peer update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/PeerCreateOrUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Peer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{name}/up/": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Devices"
+                ],
+                "summary": "Bring interface up (wg-quick up)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Device": {
+            "type": "object",
+            "properties": {
+                "addresses": {
+                    "description": "Addresses are IP addresses to assign to the interface (CIDR notation)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dns": {
+                    "description": "DNS servers to configure when interface is up",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "firewall_mark": {
+                    "description": "FirewallMark is the device firewall mark",
+                    "type": "integer"
+                },
+                "listen_port": {
+                    "description": "ListenPort is the WireGuard listen port",
+                    "type": "integer"
+                },
+                "mtu": {
+                    "description": "MTU for the interface (auto-calculated if not set)",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name is the WireGuard interface name",
+                    "type": "string"
+                },
+                "peers_count": {
+                    "description": "PeersCount is the number of connected peers",
+                    "type": "integer"
+                },
+                "post_down": {
+                    "description": "PostDown commands to run after interface goes down",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "post_up": {
+                    "description": "PostUp commands to run after interface comes up",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pre_down": {
+                    "description": "PreDown commands to run before interface goes down",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pre_up": {
+                    "description": "PreUp commands to run before interface comes up",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "private_key": {
+                    "description": "PrivateKey is the device private key (base64) - only returned on create",
+                    "type": "string"
+                },
+                "public_key": {
+                    "description": "PublicKey is the device public key (base64)",
+                    "type": "string"
+                },
+                "running": {
+                    "description": "Running indicates if the interface is currently up",
+                    "type": "boolean"
+                },
+                "table": {
+                    "description": "Table is the routing table (auto, off, or table number)",
+                    "type": "string"
+                },
+                "total_receive_bytes": {
+                    "description": "TotalReceiveBytes across all peers",
+                    "type": "integer"
+                },
+                "total_transmit_bytes": {
+                    "description": "TotalTransmitBytes across all peers",
+                    "type": "integer"
+                }
+            }
+        },
+        "DeviceCreateOrUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "addresses": {
+                    "description": "Addresses to assign (CIDR notation)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dns": {
+                    "description": "DNS servers",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "firewall_mark": {
+                    "description": "FirewallMark for the interface",
+                    "type": "integer"
+                },
+                "listen_port": {
+                    "description": "ListenPort for the WireGuard interface",
+                    "type": "integer"
+                },
+                "mtu": {
+                    "description": "MTU for the interface",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name is required for creation",
+                    "type": "string"
+                },
+                "post_down": {
+                    "description": "PostDown commands",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "post_up": {
+                    "description": "PostUp commands",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pre_down": {
+                    "description": "PreDown commands",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pre_up": {
+                    "description": "PreUp commands",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "private_key": {
+                    "description": "PrivateKey (base64) - if not provided, one will be generated",
+                    "type": "string"
+                },
+                "table": {
+                    "description": "Table routing table",
+                    "type": "string"
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Code is the error code",
+                    "type": "string"
+                },
+                "detail": {
+                    "description": "Detail is the error's detailed description",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "Message is the error's short description",
+                    "type": "string"
+                }
+            }
+        },
+        "Peer": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "description": "AllowedIPs are the peer's allowed IPs in CIDR notation",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "endpoint": {
+                    "description": "Endpoint is the peer's endpoint in host:port format",
+                    "type": "string"
+                },
+                "last_handshake_time": {
+                    "description": "LastHandshakeTime is the peer's last handshake time (RFC3339)",
+                    "type": "string"
+                },
+                "persistent_keepalive_interval": {
+                    "description": "PersistentKeepaliveInterval is the peer's keepalive interval",
+                    "type": "string"
+                },
+                "preshared_key": {
+                    "description": "PresharedKey is the base64 encoded preshared key",
+                    "type": "string"
+                },
+                "private_key": {
+                    "description": "PrivateKey is the base64 encoded private key (stored separately)",
+                    "type": "string"
+                },
+                "public_key": {
+                    "description": "PublicKey is the base64 encoded public key",
+                    "type": "string"
+                },
+                "receive_bytes": {
+                    "description": "ReceiveBytes is the number of bytes received from this peer",
+                    "type": "integer"
+                },
+                "transmit_bytes": {
+                    "description": "TransmitBytes is the number of bytes transmitted to this peer",
+                    "type": "integer"
+                },
+                "url_safe_public_key": {
+                    "description": "URLSafePublicKey is the URL-safe base64 encoded public key",
+                    "type": "string"
+                }
+            }
+        },
+        "PeerCreateOrUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "endpoint": {
+                    "type": "string"
+                },
+                "persistent_keepalive_interval": {
+                    "type": "string"
+                },
+                "preshared_key": {
+                    "type": "string"
+                },
+                "private_key": {
+                    "type": "string"
+                },
+                "public_key": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

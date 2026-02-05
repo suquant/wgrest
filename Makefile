@@ -10,6 +10,18 @@ clean:
 
 install: build
 
+# Generate swagger docs
+swagger:
+	swag init -g cmd/wgrest-server/main.go -o api/docs --ot json
+
+# Run tests
+test:
+	go test ./... -v
+
+# Run linter
+lint:
+	golangci-lint run
+
 define wgrest
 $(BUILDDIR)/wgrest-$(1)-$(2): export CGO_ENABLED := 0
 $(BUILDDIR)/wgrest-$(1)-$(2): export GOOS := $(1)
@@ -25,18 +37,4 @@ $(foreach OS,$(OSS),$(foreach ARCH,$(ARCHS),$(eval $(call wgrest,$(OS),$(ARCH)))
 $(BUILDDIR)/wgrest: $(foreach OS,$(OSS),$(foreach ARCH,$(ARCHS),$(BUILDDIR)/wgrest-$(OS)-$(ARCH)))
 	@mkdir -vp "$(BUILDDIR)"
 
-go-echo-server:
-	openapi-generator generate -g go-echo-server \
-		-i openapi-spec.yaml \
-		-o . \
-		--git-host github.com \
-		--git-user-id suquant \
-		--git-repo-id wgrest
-
-typescript-axios-client:
-	swagger-codegen generate -l typescript-axios \
-		--additional-properties modelPropertyNaming=original \
-		-i openapi-spec.yaml \
-		-o clients/typeascript-axios
-
-.PHONY: clean build install
+.PHONY: clean build install swagger test lint
