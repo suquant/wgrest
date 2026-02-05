@@ -28,9 +28,9 @@ jobs:
         run: go mod download
 
       - name: Run tests
-        run: go test -coverprofile=coverage.txt ./...
-        env:
-          GOEXPERIMENT: nocoverageredesign
+        run: |
+          go test ./... -v
+          go test -coverprofile=coverage.txt ./internal/...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
