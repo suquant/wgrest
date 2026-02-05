@@ -131,7 +131,7 @@ jobs:
 
       - name: Install nfpm
         run: |
-          curl -sfL https://github.com/goreleaser/nfpm/releases/download/v2.35.3/nfpm_2.35.3_linux_amd64.tar.gz | tar xz -C /usr/local/bin nfpm
+          curl -sfL https://github.com/goreleaser/nfpm/releases/download/v2.45.0/nfpm_2.45.0_linux_amd64.tar.gz | tar xz -C /usr/local/bin nfpm
 
       - name: Build packages
         run: |
