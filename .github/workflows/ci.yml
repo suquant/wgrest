@@ -28,9 +28,15 @@ jobs:
         run: go mod download
 
       - name: Run tests
+        run: go test ./... -v
+
+      - name: Generate coverage
         run: |
-          go test ./... -v
-          go test -coverprofile=coverage.txt ./internal/...
+          go test -coverprofile=coverage.txt \
+            ./internal/infrastructure/wgquick/... \
+            ./internal/interface/http/handler/... \
+            ./internal/interface/http/middleware/... \
+            ./internal/usecase/...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
