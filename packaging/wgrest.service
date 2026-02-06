@@ -10,10 +10,6 @@ Group=root
 ExecStart=/usr/local/bin/wgrest --conf /etc/wgrest/wgrest.conf
 Restart=always
 RestartSec=1
-# Security hardening (where possible while running as root)
-NoNewPrivileges=no
-ProtectSystem=strict
-ReadWritePaths=/etc/wireguard /usr/local/etc/wireguard /var/lib/wgrest
 
 [Install]
 WantedBy=multi-user.target
