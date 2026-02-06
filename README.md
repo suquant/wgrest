@@ -3,7 +3,11 @@
 [![Build Status](https://github.com/suquant/wgrest/actions/workflows/ci.yml/badge.svg)](https://github.com/suquant/wgrest/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/suquant/wgrest/branch/master/graph/badge.svg?token=NM179YJFEJ)](https://codecov.io/gh/suquant/wgrest)
 
-WGRest is a REST API server for WireGuard. It uses wg-quick style configuration files for persistent storage, providing full compatibility with standard WireGuard tooling.
+WGRest is a WireGuard REST API server. It operates WireGuard through IPC and doesn't require any dependencies. It uses wg-quick style configuration files for persistent storage, providing full compatibility with standard WireGuard tooling.
+
+Designed to be simple, fast, and lightweight — making it ideal for embedded devices such as routers or any other low-power, low-memory devices.
+
+[WireGuard](https://www.wireguard.com/) is a simple and modern VPN. It is cross-platform (Windows, macOS, BSD, iOS, Android).
 
 ## Features
 
