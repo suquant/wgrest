@@ -144,10 +144,11 @@ jobs:
           export VERSION=${GITHUB_REF_NAME#v}
           chmod +x dist/wgrest-linux-amd64
           chmod +x dist/wgrest-linux-arm64
-          nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/wgrest_${VERSION}_amd64.deb
-          nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/wgrest_${VERSION}_arm64.deb
-          nfpm pkg -f packaging/nfpm-amd64.yaml --packager rpm --target dist/wgrest_${VERSION}_amd64.rpm
-          nfpm pkg -f packaging/nfpm-arm64.yaml --packager rpm --target dist/wgrest_${VERSION}_arm64.rpm
+          # Build packages with simple names (no version) for /latest/download/ URLs
+          nfpm pkg -f packaging/nfpm-amd64.yaml --packager deb --target dist/wgrest_amd64.deb
+          nfpm pkg -f packaging/nfpm-arm64.yaml --packager deb --target dist/wgrest_arm64.deb
+          nfpm pkg -f packaging/nfpm-amd64.yaml --packager rpm --target dist/wgrest_amd64.rpm
+          nfpm pkg -f packaging/nfpm-arm64.yaml --packager rpm --target dist/wgrest_arm64.rpm
 
       - name: Upload packages
         uses: actions/upload-artifact@v4

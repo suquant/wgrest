@@ -30,8 +30,13 @@ Designed to be simple, fast, and lightweight — making it ideal for embedded de
 ### On Debian / Ubuntu
 
 ```shell
+# amd64
 curl -L https://github.com/suquant/wgrest/releases/latest/download/wgrest_amd64.deb -o wgrest_amd64.deb
 dpkg -i wgrest_amd64.deb
+
+# arm64
+curl -L https://github.com/suquant/wgrest/releases/latest/download/wgrest_arm64.deb -o wgrest_arm64.deb
+dpkg -i wgrest_arm64.deb
 ```
 
 ### Manual
